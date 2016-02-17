@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/labstack/echo"
-	mw "github.com/labstack/echo/middleware"
-	"github.com/rs/cors"
-	"google.golang.org/api/googleapi/transport"
-	"google.golang.org/api/youtube/v3"
+	"github.com/aroman/tapestry-server/Godeps/_workspace/src/github.com/labstack/echo"
+	mw "github.com/aroman/tapestry-server/Godeps/_workspace/src/github.com/labstack/echo/middleware"
+	"github.com/aroman/tapestry-server/Godeps/_workspace/src/github.com/rs/cors"
+	"github.com/aroman/tapestry-server/Godeps/_workspace/src/google.golang.org/api/googleapi/transport"
+	"github.com/aroman/tapestry-server/Godeps/_workspace/src/google.golang.org/api/youtube/v3"
 )
 
 const developerKey = "AIzaSyB-BZx063pUet0zDunRitL_kjwma68tU1c"
