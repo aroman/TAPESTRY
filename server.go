@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -46,6 +47,7 @@ func main() {
 	// Routes
 	e.Get("/search", hello)
 
+	fmt.Printf("Starting server")
 	// Start server
 	e.Run(":5000")
 }
