@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"fmt"
 	"log"
 	"net/http"
@@ -47,7 +48,13 @@ func main() {
 	// Routes
 	e.Get("/search", hello)
 
-	fmt.Printf("Starting server")
+	var port string = "5000"
+
+	if os.Getenv("PORT") != "" {
+		port = os.Getenv("PORT")
+	}
+
+	fmt.Printf("Starting server on port %v", port)
 	// Start server
-	e.Run(":5000")
+	e.Run(":" + port)
 }
