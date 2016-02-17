@@ -27,7 +27,12 @@ func hello(c *echo.Context) error {
 	}
 
 	// Make the API call to YouTube.
-	call := service.Search.List("id,snippet").Q(c.Query("q")).MaxResults(10)
+	call := service.Search.
+		List("id,snippet").
+		Q(c.Query("q")).
+		PublishedAfter(c.Query("after")).
+		PublishedBefore(c.Query("before")).
+		MaxResults(10)
 	response, err := call.Do()
 	if err != nil {
 		log.Fatalf("Error making search API call: %v", err)
