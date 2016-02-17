@@ -32,6 +32,8 @@ func hello(c *echo.Context) error {
 		Q(c.Query("q")).
 		PublishedAfter(c.Query("after")).
 		PublishedBefore(c.Query("before")).
+		Location(c.Query("location"))
+		LocationRadius(c.Query("radius"))
 		MaxResults(10)
 	response, err := call.Do()
 	if err != nil {
