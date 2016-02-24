@@ -1,0 +1,15 @@
+{
+  "author": "",
+  "name": "flint-app-tapestry",
+  "repository": "https://github.com/tapestry",
+  "description": "",
+  "version": "1.0.0",
+  "main": "",
+  "scripts": {},
+  "dependencies": {
+    "moment": "^2.11.2",
+    "react": "^0.14.7",
+    "react-youtube": "^5.0.0"
+  },
+  "installed": []
+}
