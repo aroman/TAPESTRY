@@ -4,6 +4,7 @@ import (
 	"os"
 	"fmt"
 	"log"
+	"strconv"
 	"net/http"
 
 	"github.com/labstack/echo"
@@ -43,7 +44,8 @@ func hello(c *echo.Context) error {
 	}
 
 	if c.Query("maxResults") != "" {
-		call.MaxResults(c.Query("maxResults"))
+		i, _ := strconv.ParseInt(c.Query("maxResults"), 10, 64)
+		call.MaxResults(i)
 	}
 
 	if c.Query("radius") != "" {
