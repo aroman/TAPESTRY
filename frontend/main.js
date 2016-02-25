@@ -15,6 +15,14 @@ view DateBox {
     marginTop: 10
   }
 }
+view Location {
+  <label>{view.props.label}</label>
+  <br/>
+  <input onChange={view.props.onChange}/>
+  $ = {
+    marginTop: 10
+  }
+}
 
 view SearchButton {
   <button onClick={view.props.onClick}>Search</button>
@@ -47,6 +55,8 @@ view Main {
   start = ""
   end = ""
   searchQuery = ""
+  lat = ""
+  long = ""
   localhost = false
 
   async function search() {
@@ -55,7 +65,11 @@ view Main {
     url = !localhost ? "http://tapestry-server.herokuapp.com/search?" : "//localhost:5000/search?"
 
     searchQuery.replace(" ", "%20")
-    const test = `${url}q=${searchQuery}&after=${startDate.toISOString()}&before=${endDate.toISOString()}`
+    const test = `${url}q=${searchQuery}
+      &after=${startDate.toISOString()}
+      &before=${endDate.toISOString()}
+      &latitude=${lat}
+      &longitude=${long}`
     results = await fetch.json(test)
     view.update()
   }
@@ -63,6 +77,8 @@ view Main {
   <SearchBox onChange={e => searchQuery = e.target.value}/>
   <DateBox label={'Start'} onChange={e => start = e.target.value}/>
   <DateBox label={'End'} onChange={e => end = e.target.value}/>
+  <Location label={'Latitude'} onChange={e => lat = e.target.value}/>
+  <Location label={'Longitude'} onChange={e => long = e.target.value}/>
   <SearchButton onClick={search}/>
   <CheckBox onChange={e => localhost = !localhost}/>
   // <CheckBox/>
