@@ -7,20 +7,15 @@ view SearchBox {
   <input placeholder='cupcakes' onChange={view.props.onChange}/>
 }
 
-view DateBox {
-  <label>{view.props.label} date:</label>
+view SearchParams {
+  <label>{view.props.label}</label>
   <br/>
-  <input placeholder='MM/DD/YYYY' onChange={view.props.onChange}/>
+  <input placeholder={view.props.placeholder} onChange={view.props.onChange}/>
   $ = {
     marginTop: 10
   }
-}
-view Location {
-  <label>{view.props.label}</label>
-  <br/>
-  <input onChange={view.props.onChange}/>
-  $ = {
-    marginTop: 10
+  $input = {
+    width: 100
   }
 }
 
@@ -57,6 +52,8 @@ view Main {
   searchQuery = ""
   lat = ""
   long = ""
+  radius = ""
+  maxResults = ""
   localhost = false
 
   async function search() {
@@ -69,16 +66,20 @@ view Main {
       &after=${startDate.toISOString()}
       &before=${endDate.toISOString()}
       &latitude=${lat}
-      &longitude=${long}`
+      &longitude=${long}
+      &radius=${radius}
+      &maxResults=${maxResults}`
     results = await fetch.json(test)
     view.update()
   }
 
   <SearchBox onChange={e => searchQuery = e.target.value}/>
-  <DateBox label={'Start'} onChange={e => start = e.target.value}/>
-  <DateBox label={'End'} onChange={e => end = e.target.value}/>
-  <Location label={'Latitude'} onChange={e => lat = e.target.value}/>
-  <Location label={'Longitude'} onChange={e => long = e.target.value}/>
+  <SearchParams label={'Start'} placeholder={'MM/DD/YYYY'} onChange={e => start = e.target.value}/>
+  <SearchParams label={'End'} placeholder={'MM/DD/YYYY'} onChange={e => end = e.target.value}/>
+  <SearchParams label={'Latitude:'} onChange={e => lat = e.target.value}/>
+  <SearchParams label={'Longitude:'} onChange={e => long = e.target.value}/>
+  <SearchParams label={'Radius:'} placeholder={'1500m, 5km, 10000ft, and 0.75mi'} onChange={e => radius = e.target.value}/>
+  <SearchParams label={'Results Count:'} placeholder={'Between 0 and 50'} onChange={e => maxResults = e.target.value}/>
   <SearchButton onClick={search}/>
   <CheckBox onChange={e => localhost = !localhost}/>
   // <CheckBox/>
