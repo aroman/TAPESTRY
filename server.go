@@ -6,11 +6,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/aroman/tapestry-server/Godeps/_workspace/src/github.com/labstack/echo"
-	mw "github.com/aroman/tapestry-server/Godeps/_workspace/src/github.com/labstack/echo/middleware"
-	"github.com/aroman/tapestry-server/Godeps/_workspace/src/github.com/rs/cors"
-	"github.com/aroman/tapestry-server/Godeps/_workspace/src/google.golang.org/api/googleapi/transport"
-	"github.com/aroman/tapestry-server/Godeps/_workspace/src/google.golang.org/api/youtube/v3"
+	"github.com/labstack/echo"
+	mw "github.com/labstack/echo/middleware"
+	"github.com/rs/cors"
+	"google.golang.org/api/googleapi/transport"
+	"google.golang.org/api/youtube/v3"
 )
 
 const developerKey = "AIzaSyB-BZx063pUet0zDunRitL_kjwma68tU1c"
@@ -26,18 +26,39 @@ func hello(c *echo.Context) error {
 		log.Fatalf("Error creating new YouTube client: %v", err)
 	}
 
-	// Make the API call to YouTube.
-	call := service.Search.
-		List("id,snippet").
-		Q(c.Query("q")).
-		PublishedAfter(c.Query("after")).
-		PublishedBefore(c.Query("before")).
-		Location(c.Query("location"))
-		LocationRadius(c.Query("radius"))
-		MaxResults(10)
+	call := service.Search.List("id,snippet")
+
+	if c.Query("after") == "" {
+		return c.String(400, "'after' parameter is required")
+	}
+	call.PublishedAfter(c.Query("after"))
+
+	if c.Query("before") == "" {
+		return c.String(400, "'before' parameter is required")
+	}
+	call.PublishedBefore(c.Query("before"))
+
+	if c.Query("q") != "" {
+		call.Q(c.Query("q"))
+	}
+
+	if c.Query("maxResults") != "" {
+		call.MaxResults(c.Query("maxResults"))
+	}
+
+	if c.Query("radius") != "" {
+		call.LocationRadius(c.Query("radius"))
+	}
+
+	if c.Query("location") != "" {
+		call.Location(c.Query("location"))
+	}
+
+	// // Make the API call to YouTube.
 	response, err := call.Do()
 	if err != nil {
-		log.Fatalf("Error making search API call: %v", err)
+		log.Printf("Error making search API call: %v", err)
+		return c.String(502, fmt.Sprintf("%v", err))
 	}
 
 	return c.JSONIndent(http.StatusOK, response.Items, "", "    ")
