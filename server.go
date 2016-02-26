@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo"
 	mw "github.com/labstack/echo/middleware"
@@ -20,8 +21,21 @@ var (
 	service *youtube.Service
 )
 
-func hello(c *echo.Context) error {
-	call := service.Search.List("id,snippet")
+func getVideos(ids []string) ([]*youtube.Video, error) {
+	call := service.Videos.List("id,recordingDetails,snippet")
+	call.Id(strings.Join(ids, ","))
+
+	response, err := call.Do()
+	if err != nil {
+		log.Printf("Error making search API call: %v", err)
+		return nil, err
+	}
+
+	return response.Items, nil
+}
+
+func search(c *echo.Context) error {
+	call := service.Search.List("id").Type("video")
 
 	if c.Query("after") == "" {
 		return c.String(400, "'after' parameter is required")
@@ -42,26 +56,31 @@ func hello(c *echo.Context) error {
 		call.MaxResults(i)
 	}
 
-	if c.Query("radius") != "" {
+	if c.Query("location") != "" {
+		if c.Query("radius") == "" {
+			return c.String(400, "'radius' parameter must accompany 'location' parameter")
+		}
+		call.Location(c.Query("location"))
 		call.LocationRadius(c.Query("radius"))
 	}
 
-	if c.Query("location") != "" {
-		call.Location(c.Query("location"))
-	}
-
-	// // Make the API call to YouTube.
-	response, err := call.Do()
+	results, err := call.Do()
 	if err != nil {
 		log.Printf("Error making search API call: %v", err)
 		return c.String(502, fmt.Sprintf("%v", err))
 	}
 
-	return c.JSONIndent(http.StatusOK, response.Items, "", "    ")
+	var ids []string
+	for _, result := range results.Items {
+		ids = append(ids, result.Id.VideoId)
+	}
+
+	videos, err := getVideos(ids)
+
+	return c.JSONIndent(http.StatusOK, videos, "", "    ")
 }
 
 func main() {
-	// Echo instance
 	e := echo.New()
 
 	// Middleware
@@ -70,7 +89,7 @@ func main() {
 	e.Use(cors.Default().Handler)
 
 	// Routes
-	e.Get("/search", hello)
+	e.Get("/search", search)
 
 	// Initialize YouTube client
 	client := &http.Client{
@@ -82,7 +101,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error creating new YouTube client: %v", err)
 	}
-	// service = _service
 
 	var port = "5000"
 
@@ -91,6 +109,5 @@ func main() {
 	}
 
 	fmt.Printf("Starting server on port %v", port)
-	// Start server
 	e.Run(":" + port)
 }
