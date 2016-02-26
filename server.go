@@ -1,11 +1,11 @@
 package main
 
 import (
-	"os"
 	"fmt"
 	"log"
-	"strconv"
 	"net/http"
+	"os"
+	"strconv"
 
 	"github.com/labstack/echo"
 	mw "github.com/labstack/echo/middleware"
@@ -16,17 +16,11 @@ import (
 
 const developerKey = "AIzaSyB-BZx063pUet0zDunRitL_kjwma68tU1c"
 
+var (
+	service *youtube.Service
+)
+
 func hello(c *echo.Context) error {
-
-	client := &http.Client{
-		Transport: &transport.APIKey{Key: developerKey},
-	}
-
-	service, err := youtube.New(client)
-	if err != nil {
-		log.Fatalf("Error creating new YouTube client: %v", err)
-	}
-
 	call := service.Search.List("id,snippet")
 
 	if c.Query("after") == "" {
@@ -78,7 +72,19 @@ func main() {
 	// Routes
 	e.Get("/search", hello)
 
-	var port string = "5000"
+	// Initialize YouTube client
+	client := &http.Client{
+		Transport: &transport.APIKey{Key: developerKey},
+	}
+
+	var err error
+	service, err = youtube.New(client)
+	if err != nil {
+		log.Fatalf("Error creating new YouTube client: %v", err)
+	}
+	// service = _service
+
+	var port = "5000"
 
 	if os.Getenv("PORT") != "" {
 		port = os.Getenv("PORT")
