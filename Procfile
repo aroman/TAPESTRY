@@ -1,1 +1,1 @@
-web: tapestry-server
+web: tapestry
