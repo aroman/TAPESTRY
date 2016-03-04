@@ -3,40 +3,16 @@
 	"GoVersion": "go1.6",
 	"Deps": [
 		{
-			"ImportPath": "github.com/labstack/echo",
-			"Comment": "v1.3-56-gf42af6e",
-			"Rev": "f42af6ea9fae26b64fafd30d648b0ffbe880fb11"
+			"ImportPath": "github.com/alecthomas/template",
+			"Rev": "14fd436dd20c3cc65242a9f396b61bfc8a3926fc"
 		},
 		{
-			"ImportPath": "github.com/labstack/echo/middleware",
-			"Comment": "v1.3-56-gf42af6e",
-			"Rev": "f42af6ea9fae26b64fafd30d648b0ffbe880fb11"
+			"ImportPath": "github.com/alecthomas/template/parse",
+			"Rev": "14fd436dd20c3cc65242a9f396b61bfc8a3926fc"
 		},
 		{
-			"ImportPath": "github.com/labstack/gommon/color",
-			"Comment": "v0.0.3-39-gbfff5bf",
-			"Rev": "bfff5bf04688a4048a5cb4dd3b3f0697caaad19c"
-		},
-		{
-			"ImportPath": "github.com/labstack/gommon/log",
-			"Comment": "v0.0.3-39-gbfff5bf",
-			"Rev": "bfff5bf04688a4048a5cb4dd3b3f0697caaad19c"
-		},
-		{
-			"ImportPath": "github.com/mattn/go-colorable",
-			"Rev": "9fdad7c47650b7d2e1da50644c1f4ba7f172f252"
-		},
-		{
-			"ImportPath": "github.com/mattn/go-isatty",
-			"Rev": "56b76bdf51f7708750eac80fa38b952bb9f32639"
-		},
-		{
-			"ImportPath": "github.com/rs/cors",
-			"Rev": "5950cf11d77f8a61b432a25dd4d444b4ced01379"
-		},
-		{
-			"ImportPath": "github.com/rs/xhandler",
-			"Rev": "d9d9599b6aaf6a058cb7b1f48291ded2cbd13390"
+			"ImportPath": "github.com/alecthomas/units",
+			"Rev": "2efee857e7cfd4f3d0138cc3cbb1b4966962b93a"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
@@ -45,22 +21,6 @@
 		{
 			"ImportPath": "golang.org/x/net/context/ctxhttp",
 			"Rev": "8968c61983e8f51a91b8c0ef25bf739278c89634"
-		},
-		{
-			"ImportPath": "golang.org/x/net/http2",
-			"Rev": "8968c61983e8f51a91b8c0ef25bf739278c89634"
-		},
-		{
-			"ImportPath": "golang.org/x/net/http2/hpack",
-			"Rev": "8968c61983e8f51a91b8c0ef25bf739278c89634"
-		},
-		{
-			"ImportPath": "golang.org/x/net/websocket",
-			"Rev": "8968c61983e8f51a91b8c0ef25bf739278c89634"
-		},
-		{
-			"ImportPath": "golang.org/x/sys/unix",
-			"Rev": "50c6bc5e4292a1d4e65c6e9be5f53be28bcbe28e"
 		},
 		{
 			"ImportPath": "google.golang.org/api/gensupport",
@@ -81,6 +41,31 @@
 		{
 			"ImportPath": "google.golang.org/api/youtube/v3",
 			"Rev": "ad6c2cd766aa31d72fe3fce08189e0ba6e5002b9"
+		},
+		{
+			"ImportPath": "gopkg.in/alecthomas/kingpin.v2",
+			"Comment": "v2.1.11",
+			"Rev": "8cccfa8eb2e3183254457fb1749b2667fbc364c7"
+		},
+		{
+			"ImportPath": "gopkg.in/mgo.v2",
+			"Comment": "r2016.02.04",
+			"Rev": "d90005c5262a3463800497ea5a89aed5fe22c886"
+		},
+		{
+			"ImportPath": "gopkg.in/mgo.v2/bson",
+			"Comment": "r2016.02.04",
+			"Rev": "d90005c5262a3463800497ea5a89aed5fe22c886"
+		},
+		{
+			"ImportPath": "gopkg.in/mgo.v2/internal/sasl",
+			"Comment": "r2016.02.04",
+			"Rev": "d90005c5262a3463800497ea5a89aed5fe22c886"
+		},
+		{
+			"ImportPath": "gopkg.in/mgo.v2/internal/scram",
+			"Comment": "r2016.02.04",
+			"Rev": "d90005c5262a3463800497ea5a89aed5fe22c886"
 		}
 	]
 }
