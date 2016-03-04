@@ -7,13 +7,8 @@ import (
 
 	"google.golang.org/api/youtube/v3"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"gopkg.in/mgo.v2"
 )
-
-// type VideoMetadata struct {
-// 	Title     string
-// 	Latitude  float64
-// 	Longitude float64
-// }
 
 var (
 	agent     *Agent
@@ -22,10 +17,9 @@ var (
 	radius    = kingpin.Flag("radius", "radius of recording").String()
 	before    = kingpin.Flag("before", "uploaded before").String()
 	after     = kingpin.Flag("after", "uploaded after").String()
-	q         = kingpin.Arg("q", "search query").String()
+	terms     = kingpin.Flag("terms", "search query").String()
+	tag       = kingpin.Flag("tag", "tag videos with tag").String()
 )
-
-const watchBase = "https://www.youtube.com/watch?v="
 
 func printVideo(video *youtube.Video) {
 	var buffer bytes.Buffer
@@ -41,7 +35,7 @@ func printVideo(video *youtube.Video) {
 				panic(err)
 			}
 
-			buffer.WriteString(fmt.Sprintf(" date=%v", ts.Format("02/01/2016")))
+			buffer.WriteString(fmt.Sprintf(" date=%v", ts.Format("02/01/2006")))
 		}
 
 		if video.RecordingDetails.Location != nil {
@@ -63,22 +57,20 @@ func printVideos(videos []*youtube.Video) {
 }
 
 func main() {
-	// session, err := mgo.Dial("mongodb://bambi:bambi@ds019078.mlab.com:19078/tapestry-sandbox")
-	//
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// defer session.Close()
-
-	// c := session.DB("tapestry-sandbox").C("videos")
-	// err = c.Insert(&VideoMetadata{"some title", 0, 0})
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
 
 	kingpin.Parse()
 
 	var err error
+	session, err := mgo.Dial("mongodb://bambi:bambi@ds019078.mlab.com:19078/tapestry-sandbox")
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer session.Close()
+
+	c := session.DB("tapestry-sandbox").C("videos")
+
 	agent, err := CreateAgent("AIzaSyB-BZx063pUet0zDunRitL_kjwma68tU1c")
 
 	if err != nil {
@@ -86,7 +78,7 @@ func main() {
 	}
 
 	params := SearchParameters{
-		terms:     *q,
+		terms:     *terms,
 		latitude:  *latitude,
 		longitude: *longitude,
 		radius:    *radius,
@@ -111,7 +103,7 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("%v\n", ids)
+	// fmt.Printf("%v\n", ids)
 
 	videos, err := agent.getVideosFromIds(ids)
 	if err != nil {
@@ -119,4 +111,26 @@ func main() {
 	}
 
 	printVideos(videos)
+
+	for _, video := range videos {
+		printVideo(video)
+		fmt.Printf("%v\n", agent.genParams(video))
+		ids, err := agent.search(agent.genParams(video))
+		if err != nil {
+			panic(err)
+		}
+		videos, err := agent.getVideosFromIds(ids)
+		if err != nil {
+			panic(err)
+		}
+		printVideos(videos)
+
+		err = c.Insert(video)
+		if err != nil {
+			panic(err)
+		}
+
+		break
+	}
+
 }

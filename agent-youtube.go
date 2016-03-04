@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -10,12 +9,6 @@ import (
 	"google.golang.org/api/googleapi/transport"
 	"google.golang.org/api/youtube/v3"
 )
-
-type VideoMetadata struct {
-	Title     string
-	Latitude  float64
-	Longitude float64
-}
 
 type Agent struct {
 	service *youtube.Service
@@ -49,11 +42,11 @@ func (agent Agent) search(params SearchParameters) ([]string, error) {
 
 	// before := timestamp.AddDate(0, 0, -1).Format(time.RFC3339Nano)
 	// after := timestamp.AddDate(0, 0, +1).Format(time.RFC3339Nano)
-	coordinates := fmt.Sprintf("%v,%v", params.longitude, params.latitude)
-
-	fmt.Printf("time: %v to %v\n", params.tsBefore, params.tsAfter)
-	fmt.Printf("place: (%v), radius: %v\n", coordinates, params.radius)
-	fmt.Printf("q: %v\n", params.terms)
+	// coordinates := fmt.Sprintf("%v,%v", params.longitude, params.latitude)
+	//
+	// fmt.Printf("time: %v to %v\n", params.tsBefore, params.tsAfter)
+	// fmt.Printf("place: (%v), radius: %v\n", coordinates, params.radius)
+	// fmt.Printf("q: %v\n", params.terms)
 
 	var ids []string
 
@@ -102,25 +95,7 @@ func (agent Agent) search(params SearchParameters) ([]string, error) {
 	return ids, nil
 }
 
-const developerKey = ""
-
-var (
-	service *youtube.Service
-)
-
-// func printVideo(video *youtube.Video) {
-// 	timestamp, _ := time.Parse(time.RFC3339Nano, video.RecordingDetails.RecordingDate)
-//
-// 	fmt.Printf("Video([%v%v], [%v], [%v])\n", watchBase, video.Id, video.Snippet.Title, timestamp.Format("02/01/2006"))
-// }
-//
-// func printVideos(videos []*youtube.Video) {
-// 	fmt.Printf("displaying info about %v videos:\n", len(videos))
-// 	for _, video := range videos {
-// 		printVideo(video)
-// 	}
-// }
-
+// takes a list of video IDs and returns Video objects containing metadata
 func (agent Agent) getVideosFromIds(ids []string) ([]*youtube.Video, error) {
 	var videos []*youtube.Video
 	nextPageToken := ""
@@ -147,34 +122,30 @@ func (agent Agent) getVideosFromIds(ids []string) ([]*youtube.Video, error) {
 	return videos, nil
 }
 
-func depthSearch(location *youtube.GeoPoint, timestamp time.Time, q string) {
-	call := service.Search.List("id,snippet").Type("video")
-	call.Location(fmt.Sprintf("%v,%v", location.Latitude, location.Longitude))
-	call.LocationRadius("100km")
-	before := timestamp.AddDate(0, 0, -1).Format(time.RFC3339Nano)
-	after := timestamp.AddDate(0, 0, +1).Format(time.RFC3339Nano)
-	// fmt.Printf("time: %v to %v\n", before, after)
-	// fmt.Printf("place: (%v,%v)\n", location.Latitude, location.Longitude)
-	// fmt.Printf("q: %v\n", q)
-	call.PublishedBefore(before)
-	call.PublishedAfter(after)
-	call.Q(q)
-	response, err := call.Do()
-	if err != nil {
-		log.Fatalf("Error making depthSearch search API call: %v", err)
-	}
-	// j, _ := response.MarshalJSON()
-	// fmt.Printf("%v\n", string(j))
+func (agent Agent) genParams(video *youtube.Video) SearchParameters {
 
-	var ids []string
-	for _, result := range response.Items {
-		ids = append(ids, result.Id.VideoId)
+	params := SearchParameters{
+		terms: video.Snippet.Title,
 	}
 
-	// videos, err := getVideosFromIds(ids)
-	// if err != nil {
-	// 	log.Fatalf("Error making videos API call: %v", err)
-	// }
-	//
-	// printVideos(videos)
+	if video.RecordingDetails != nil {
+
+		if video.RecordingDetails.RecordingDate != "" {
+			ts, err := time.Parse(time.RFC3339, video.RecordingDetails.RecordingDate)
+			if err != nil {
+				panic(err)
+			}
+			params.tsAfter = ts.AddDate(0, 0, -1)
+			params.tsBefore = ts.AddDate(0, 0, +1)
+		}
+
+		if video.RecordingDetails.Location != nil {
+			params.latitude = video.RecordingDetails.Location.Latitude
+			params.longitude = video.RecordingDetails.Location.Longitude
+			params.radius = "100km"
+		}
+
+	}
+
+	return params
 }
