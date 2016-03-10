@@ -1,3 +1,5 @@
+import iso8601
+
 # adapted from https://www.cs.cmu.edu/~112/notes/structClass.py
 class Location(object):
     def __init__(self, **kwargs):
@@ -79,6 +81,16 @@ api = eventful.API(eventfulAPIkey)
 # If you need to log in:
 # api.login('user', 'password')
 
+def genFlags(event):
+    flags = [
+        '--terms="%s"' % event['title'],
+        '--after=%s' % iso8601.parse_date(event['start_time']).strftime('%m-%d-%Y'),
+        '--lat=%s' % event['latitude'],
+        '--long=%s' % event['longitude'],
+        '--radius=%s' % '100km'
+    ]
+    return ' '.join(flags)
+
 numberOfCities = 10
 numberOfEvents = 10
 for city in mostPopulousCities(numberOfCities, allCities):
@@ -87,11 +99,9 @@ for city in mostPopulousCities(numberOfCities, allCities):
     events = api.call('/events/search', l=latlong,
         date='Past', within='50', sort_order='popularity',
         units='km', page_size=str(numberOfEvents), category=eventType)
-    try:
-        for event in events['events']['event']:
-            print(event)
-            print("%s at %s at %s" % (event['title'], event['country_name'], event['city_name']))
-    except:
-        print("Failed at getting information")
+    for event in events['events']['event']:
+        # print(event)
+        # print("%s at %s at %s" % (event['title'], event['country_name'], event['city_name']))
+        print(genFlags(event))
 
 print("###COMPLETE###")
