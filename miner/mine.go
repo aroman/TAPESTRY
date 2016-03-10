@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"time"
 
 	"google.golang.org/api/youtube/v3"
@@ -109,6 +110,9 @@ func main() {
 	roots, err := agent.getVideosFromIds(ids)
 	if err != nil {
 		panic(err)
+	}
+	if len(roots) == 0 {
+		log.Fatalf("No results found!\n")
 	}
 	root := roots[0]
 
