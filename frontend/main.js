@@ -1,35 +1,6 @@
 import moment from 'moment'
 import YouTube from 'react-youtube'
 
-view SearchBox {
-  <label>Search terms:</label>
-  <br/>
-  <input placeholder='cupcakes' onChange={view.props.onChange}/>
-}
-
-view SearchParams {
-  <label>{view.props.label}</label>
-  <br/>
-  <input placeholder={view.props.placeholder} onChange={view.props.onChange}/>
-  $ = {
-    marginTop: 10
-  }
-  $input = {
-    width: 100
-  }
-}
-
-view SearchButton {
-  <button onClick={view.props.onClick}>Search</button>
-  $ = {
-    marginTop: 10
-  }
-}
-view CheckBox {
-  <confirmationText> <input type='checkbox' onChange={view.props.onChange}/> localhost:5000 search </confirmationText>
-
-}
-
 view Video {
   <h5>{`${view.props.video.snippet.title}  — (${moment(view.props.video.snippet.publishedAt).format('MMMM DD, YYYY')})`}</h5>
   <YouTube
@@ -42,54 +13,107 @@ view Video {
   }
 }
 
+view StackedImages {
+  <img class='third' src='//placehold.it/250x250/0000cc'/>
+  <img class='second' src='//placehold.it/250x250/00cc00'/>
+  <img class='first' src='//placehold.it/250x250/cc0000'/>
+
+  offset = 10
+
+  $ = {
+    position: 'relative',
+    marginBottom: offset * 3,
+  }
+
+  $third = { top: 0, left: 0 }
+
+  $second = { top: offset, left: offset }
+
+  $first = {
+    top: offset * 2,
+    left: offset * 2,
+    position: "relative",
+  }
+
+  $img = {
+    position: 'absolute',
+    width: '100%',
+    height: 150,
+  }
+}
+
+view ClusterThumbnail {
+
+  isSelected = false
+
+  <input
+    type='checkbox'
+    defaultChecked={isSelected}
+    onChange={e => isSelected = e.target.checked}
+  />
+  <StackedImages/>
+  <detail class='title'>Title of Video</detail>
+  <detail class='location'>Geographic Location</detail>
+  <detail class='stats'>
+    <detail class='count'>4 videos, </detail>
+    <detail class='time'>1:06:40</detail>
+  </detail>
+
+  $ = {
+    outline: '1px solid black',
+    width: 250,
+    fontSize: 12,
+  }
+
+  $StackedImages = {
+    width: '92%',
+    marginTop: -19
+  }
+
+  $input = {
+    marginLeft: -20,
+  }
+
+  $title = {
+    fontWeight: 'bold',
+    fontSize: 14,
+  }
+
+  $location = {
+    fontSize: 12,
+  }
+
+  $count = {
+    display: 'inline'
+  }
+
+  $time = {
+    fontWeight: 'bold',
+    display: 'inline',
+  }
+
+  $stats = {
+    float: 'right',
+    marginTop: -32,
+    marginRight: 5,
+  }
+}
+
+view DownloadButton {
+  <button>Download Selected Clusters</button>
+
+  $button = {
+    fontSize: 20,
+    marginTop: 10,
+  }
+}
+
 view Main {
-  <h1>tapestry</h1>
+  <h1>Most Recent Clusters</h1>
 
-  results = []
+  <ClusterThumbnail/>
 
-  start = ""
-  end = ""
-  searchQuery = ""
-  lat = ""
-  long = ""
-  radius = ""
-  maxResults = ""
-  localhost = false
-
-  async function search() {
-    const startDate = moment(start, "MM-DD-YYYY")
-    const endDate = moment(end, "MM-DD-YYYY")
-    url = !localhost ? "http://tapestry-server.herokuapp.com/search?" : "//localhost:5000/search?"
-
-    searchQuery.replace(" ", "%20")
-    const test = `${url}q=${searchQuery}
-      &after=${startDate.toISOString()}
-      &before=${endDate.toISOString()}
-      &latitude=${lat}
-      &longitude=${long}
-      &radius=${radius}
-      &maxResults=${maxResults}`
-    results = await fetch.json(test)
-    view.update()
-  }
-
-  <SearchBox onChange={e => searchQuery = e.target.value}/>
-  <SearchParams label={'Start'} placeholder={'MM/DD/YYYY'} onChange={e => start = e.target.value}/>
-  <SearchParams label={'End'} placeholder={'MM/DD/YYYY'} onChange={e => end = e.target.value}/>
-  <SearchParams label={'Latitude:'} onChange={e => lat = e.target.value}/>
-  <SearchParams label={'Longitude:'} onChange={e => long = e.target.value}/>
-  <SearchParams label={'Radius:'} placeholder={'1500m, 5km, 10000ft, and 0.75mi'} onChange={e => radius = e.target.value}/>
-  <SearchParams label={'Results Count:'} placeholder={'Between 0 and 50'} onChange={e => maxResults = e.target.value}/>
-  <SearchButton onClick={search}/>
-  <CheckBox onChange={e => localhost = !localhost}/>
-  // <CheckBox/>
-  <videos>
-    <Video repeat={results} video={_}/>
-  </videos>
-
-  $h1 = {
-    color: 'dimgray',
-  }
+  <DownloadButton/>
 
   $ = {
     padding: 45,
