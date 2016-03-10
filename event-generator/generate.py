@@ -81,7 +81,7 @@ api = eventful.API(eventfulAPIkey)
 # If you need to log in:
 # api.login('user', 'password')
 
-def genFlags(event):
+def genFlags(event, useAllFields=False):
     flags = [
         '--terms="%s"' % event['title'],
         '--after=%s' % iso8601.parse_date(event['start_time']).strftime('%m-%d-%Y'),
@@ -89,7 +89,9 @@ def genFlags(event):
         '--long=%s' % event['longitude'],
         '--radius=%s' % '100km'
     ]
-    return ' '.join(flags)
+    if useAllFields:
+        return ' '.join(flags)
+    return flags[0]
 
 numberOfCities = 10
 numberOfEvents = 10
@@ -102,6 +104,6 @@ for city in mostPopulousCities(numberOfCities, allCities):
     for event in events['events']['event']:
         # print(event)
         # print("%s at %s at %s" % (event['title'], event['country_name'], event['city_name']))
-        print(genFlags(event))
+        print(genFlags(event, True))
 
 print("###COMPLETE###")
