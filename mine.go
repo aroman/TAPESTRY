@@ -19,6 +19,7 @@ var (
 	after     = kingpin.Flag("after", "uploaded after").String()
 	terms     = kingpin.Flag("terms", "search query").String()
 	tag       = kingpin.Flag("tag", "tag videos with tag").String()
+	n         = kingpin.Flag("n", "max number of videos to download").Default("50").Int()
 )
 
 func printVideo(video *youtube.Video) {
@@ -105,32 +106,30 @@ func main() {
 
 	// fmt.Printf("%v\n", ids)
 
-	videos, err := agent.getVideosFromIds(ids)
+	roots, err := agent.getVideosFromIds(ids)
+	if err != nil {
+		panic(err)
+	}
+	root := roots[0]
+
+	ids, err = agent.search(agent.genParams(root))
 	if err != nil {
 		panic(err)
 	}
 
-	printVideos(videos)
+	videos, err := agent.getVideosFromIds(ids)
+
+	fmt.Printf("root:\n")
+	printVideo(root)
 
 	for _, video := range videos {
-		printVideo(video)
-		fmt.Printf("%v\n", agent.genParams(video))
-		ids, err := agent.search(agent.genParams(video))
+		// tag = root video's id
+		err = c.Insert(serialize(video, root.Id))
 		if err != nil {
 			panic(err)
 		}
-		videos, err := agent.getVideosFromIds(ids)
-		if err != nil {
-			panic(err)
-		}
-		printVideos(videos)
-
-		err = c.Insert(video)
-		if err != nil {
-			panic(err)
-		}
-
-		break
 	}
+
+	printVideos(videos)
 
 }

@@ -40,14 +40,6 @@ func CreateAgent(key string) (*Agent, error) {
 // returns a list of youtube video IDs (results)
 func (agent Agent) search(params SearchParameters) ([]string, error) {
 
-	// before := timestamp.AddDate(0, 0, -1).Format(time.RFC3339Nano)
-	// after := timestamp.AddDate(0, 0, +1).Format(time.RFC3339Nano)
-	// coordinates := fmt.Sprintf("%v,%v", params.longitude, params.latitude)
-	//
-	// fmt.Printf("time: %v to %v\n", params.tsBefore, params.tsAfter)
-	// fmt.Printf("place: (%v), radius: %v\n", coordinates, params.radius)
-	// fmt.Printf("q: %v\n", params.terms)
-
 	var ids []string
 
 	nextPageToken := ""
@@ -124,28 +116,53 @@ func (agent Agent) getVideosFromIds(ids []string) ([]*youtube.Video, error) {
 
 func (agent Agent) genParams(video *youtube.Video) SearchParameters {
 
+	vm := serialize(video, "")
+
 	params := SearchParameters{
-		terms: video.Snippet.Title,
+		terms: vm.Title,
+	}
+
+	if !vm.RecordingDate.IsZero() {
+		params.tsAfter = vm.RecordingDate.AddDate(0, 0, -1)
+		params.tsBefore = vm.RecordingDate.AddDate(0, 0, +1)
+	}
+
+	if vm.Longitude != 0 {
+		params.longitude = vm.Longitude
+		params.latitude = vm.Latitude
+		params.radius = "100km"
+	}
+
+	return params
+}
+
+func serialize(video *youtube.Video, tag string) VideoMetadata {
+
+	vm := VideoMetadata{
+		Title: video.Snippet.Title,
+	}
+
+	if tag != "" {
+		vm.Tag = tag
 	}
 
 	if video.RecordingDetails != nil {
 
 		if video.RecordingDetails.RecordingDate != "" {
-			ts, err := time.Parse(time.RFC3339, video.RecordingDetails.RecordingDate)
-			if err != nil {
-				panic(err)
-			}
-			params.tsAfter = ts.AddDate(0, 0, -1)
-			params.tsBefore = ts.AddDate(0, 0, +1)
+			ts, _ := time.Parse(time.RFC3339, video.RecordingDetails.RecordingDate)
+			vm.RecordingDate = ts
 		}
 
 		if video.RecordingDetails.Location != nil {
-			params.latitude = video.RecordingDetails.Location.Latitude
-			params.longitude = video.RecordingDetails.Location.Longitude
-			params.radius = "100km"
+			if video.RecordingDetails.Location.Latitude != 0 {
+				vm.Longitude = video.RecordingDetails.Location.Latitude
+			}
+			if video.RecordingDetails.Location.Latitude != 0 {
+				vm.Latitude = video.RecordingDetails.Location.Longitude
+			}
 		}
 
 	}
 
-	return params
+	return vm
 }
