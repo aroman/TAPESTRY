@@ -1,4 +1,5 @@
 import moment from 'moment'
+import _ from 'underscore'
 import YouTube from 'react-youtube'
 
 view Video {
@@ -46,23 +47,27 @@ view ClusterThumbnail {
 
   isSelected = false
 
-  <input
-    type='checkbox'
-    defaultChecked={isSelected}
-    onChange={e => isSelected = e.target.checked}
-  />
-  <StackedImages/>
-  <detail class='title'>Title of Video</detail>
-  <detail class='location'>Geographic Location</detail>
-  <detail class='stats'>
-    <detail class='count'>4 videos, </detail>
-    <detail class='time'>1:06:40</detail>
-  </detail>
+  <wrapper onClick={view.props.onClick}>
+    <input
+      type='checkbox'
+      defaultChecked={isSelected}
+      onChange={e => isSelected = e.target.checked}
+    />
+    <StackedImages/>
+    <detail class='title'>{view.props.videos[0].Title}</detail>
+    <detail class='location'>Geographic Location</detail>
+    <detail class='stats'>
+      <detail class='count'>{view.props.videos.length} videos, </detail>
+      <detail class='time'>1:06:40</detail>
+      <detail class='tag'>tag: {view.props.id}</detail>
+    </detail>
+  </wrapper>
 
   $ = {
     outline: '1px solid black',
     width: 250,
     fontSize: 12,
+    margin: 25
   }
 
   $StackedImages = {
@@ -100,7 +105,7 @@ view ClusterThumbnail {
 }
 
 view DownloadButton {
-  <button>Download Selected Clusters</button>
+  <button onClick={view.props.onClick}>Download Selected Clusters</button>
 
   $button = {
     fontSize: 20,
@@ -109,14 +114,50 @@ view DownloadButton {
 }
 
 view Main {
+  videos = []
+  clusters = []
+  clusterIndex = null
+
+  function load() {
+    console.log('load')
+    fetch('http://localhost:8000/')
+    .then(response => response.json())
+    .then(json => {
+      videos = json
+      clusters = _.map(_.groupBy(videos, 'Tag'), (videos, Tag) => {
+        return {
+          _id: Tag || 'none',
+          videos,
+        }
+      })
+      view.update()
+    })
+    .catch(err => {
+      console.log(err)
+    })
+  }
+
+  load()
+
   <h1>Most Recent Clusters</h1>
 
-  <ClusterThumbnail/>
+  <YouTube
+    if={clusterIndex !== null}
+    opts={{height: '289', width: '360'}}
+    videoId={clusters[clusterIndex]._id}
+  />
 
-  <DownloadButton/>
+  <ClusterThumbnail
+    repeat={clusters}
+    id={_._id}
+    videos={_.videos}
+    onClick={() => {clusterIndex = clusters.indexOf(_); view.update()}}
+  />
+
+  <DownloadButton onClick={() => alert('downloading...')}/>
 
   $ = {
     padding: 45,
-    paddingTop: 17
+    paddingTop: 20
   }
 }
