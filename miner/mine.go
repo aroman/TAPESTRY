@@ -83,7 +83,7 @@ func main() {
 		}
 	}
 
-	log.Debug("Performing root search")
+	log.Debugf("Performing root search: %v", *terms)
 	ids, err := agent.search(params)
 
 	if err != nil {
@@ -96,7 +96,7 @@ func main() {
 	}
 
 	if len(roots) == 0 {
-		log.Fatal("No results found for root search.")
+		log.Fatal("No results found for root search")
 	}
 	root := roots[0]
 
