@@ -1,13 +1,12 @@
 package main
 
 import (
-	"bytes"
-	"fmt"
-	"log"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"google.golang.org/api/youtube/v3"
 	"gopkg.in/alecthomas/kingpin.v2"
+
 	"gopkg.in/mgo.v2"
 )
 
@@ -20,59 +19,43 @@ var (
 	after     = kingpin.Flag("after", "uploaded after").String()
 	terms     = kingpin.Flag("terms", "search query").String()
 	tag       = kingpin.Flag("tag", "tag videos with tag").String()
-	n         = kingpin.Flag("n", "max number of videos to download").Default("50").Int()
+	dryRun    = kingpin.Flag("dry", "dry run (don't save videos)").Bool()
 )
 
-func printVideo(video *youtube.Video) {
-	var buffer bytes.Buffer
-
-	buffer.WriteString(fmt.Sprintf("Video(id=%v", video.Id))
-
-	if video.RecordingDetails != nil {
-
-		if video.RecordingDetails.RecordingDate != "" {
-			ts, err := time.Parse(time.RFC3339, video.RecordingDetails.RecordingDate)
-
-			if err != nil {
-				panic(err)
-			}
-
-			buffer.WriteString(fmt.Sprintf(" date=%v", ts.Format("02/01/2006")))
-		}
-
-		if video.RecordingDetails.Location != nil {
-			buffer.WriteString(fmt.Sprintf(" lat=%v", video.RecordingDetails.Location.Latitude))
-			buffer.WriteString(fmt.Sprintf(" long=%v", video.RecordingDetails.Location.Longitude))
-		}
-
+func truncate(str string, max int) string {
+	if max < len(str) {
+		return str[:max-3] + "..."
 	}
-
-	buffer.WriteString(fmt.Sprintf(" title='%v'", video.Snippet.Title))
-	fmt.Printf("%v)\n", buffer.String())
+	return str
 }
 
-func printVideos(videos []*youtube.Video) {
-	fmt.Printf("Displaying %v videos:\n", len(videos))
-	for _, video := range videos {
-		printVideo(video)
-	}
+func printVideo(video *youtube.Video) {
+	vm := serialize(video, "")
+
+	log.WithFields(log.Fields{
+		"id":        vm.YoutubeID,
+		"published": vm.PublishedAt.Format("01/02/2006"),
+		"lat":       vm.Latitude,
+		"long":      vm.Longitude,
+	}).Info(truncate(vm.Title, 44))
 }
 
 func main() {
 
+	log.SetLevel(log.DebugLevel)
+
 	kingpin.Parse()
 
 	var err error
-	session, err := mgo.Dial("mongodb://bambi:bambi@ds019078.mlab.com:19078/tapestry-sandbox")
+
+	log.Debug("Connecting to database")
+	c, err := GetCollection("videos")
 
 	if err != nil {
 		panic(err)
 	}
 
-	defer session.Close()
-
-	c := session.DB("tapestry-sandbox").C("videos")
-
+	log.Debug("Creating YouTube Agent")
 	agent, err := CreateAgent("AIzaSyB-BZx063pUet0zDunRitL_kjwma68tU1c")
 
 	if err != nil {
@@ -100,19 +83,20 @@ func main() {
 		}
 	}
 
+	log.Debug("Performing root search")
 	ids, err := agent.search(params)
+
 	if err != nil {
 		panic(err)
 	}
-
-	// fmt.Printf("%v\n", ids)
 
 	roots, err := agent.getVideosFromIds(ids)
 	if err != nil {
 		panic(err)
 	}
+
 	if len(roots) == 0 {
-		log.Fatalf("No results found!\n")
+		log.Fatal("No results found for root search.")
 	}
 	root := roots[0]
 
@@ -121,19 +105,33 @@ func main() {
 		panic(err)
 	}
 
-	videos, err := agent.getVideosFromIds(ids)
-
-	fmt.Printf("root:\n")
+	log.Info("Root video identified")
 	printVideo(root)
 
+	videos, err := agent.getVideosFromIds(ids)
+	// first result is the root video. skip it.
+	videos = videos[1:]
+
+	log.WithFields(log.Fields{
+		"results": len(videos),
+	}).Info("Found related videos")
+
 	for _, video := range videos {
-		// tag = root video's id
+		printVideo(video)
+		// serialize tag is root video's id
+		if *dryRun {
+			log.Fatal("Dry-run mode; not writing videos to database")
+			continue
+		}
 		err = c.Insert(serialize(video, root.Id))
 		if err != nil {
+			if mgo.IsDup(err) {
+				log.Warn("Video already in database; skipping")
+				continue
+			}
 			panic(err)
 		}
+		log.Debug("Video written to database")
 	}
-
-	printVideos(videos)
 
 }

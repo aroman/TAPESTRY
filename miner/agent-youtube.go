@@ -92,7 +92,7 @@ func (agent Agent) getVideosFromIds(ids []string) ([]*youtube.Video, error) {
 	var videos []*youtube.Video
 	nextPageToken := ""
 	for {
-		call := agent.service.Videos.List("id,recordingDetails,snippet")
+		call := agent.service.Videos.List("id,recordingDetails,snippet,contentDetails")
 		call.Id(strings.Join(ids, ","))
 		call.PageToken(nextPageToken)
 
@@ -122,10 +122,8 @@ func (agent Agent) genParams(video *youtube.Video) SearchParameters {
 		terms: vm.Title,
 	}
 
-	if !vm.RecordingDate.IsZero() {
-		params.tsAfter = vm.RecordingDate.AddDate(0, 0, -1)
-		params.tsBefore = vm.RecordingDate.AddDate(0, 0, +1)
-	}
+	params.tsAfter = vm.PublishedAt.AddDate(0, 0, -1)
+	params.tsBefore = vm.PublishedAt.AddDate(0, 0, +1)
 
 	if vm.Longitude != 0 {
 		params.longitude = vm.Longitude
@@ -138,8 +136,15 @@ func (agent Agent) genParams(video *youtube.Video) SearchParameters {
 
 func serialize(video *youtube.Video, tag string) VideoMetadata {
 
+	ts, _ := time.Parse(time.RFC3339, video.Snippet.PublishedAt)
+
 	vm := VideoMetadata{
-		Title: video.Snippet.Title,
+		Title:        video.Snippet.Title,
+		PublishedAt:  ts,
+		YoutubeID:    video.Id,
+		Duration:     video.ContentDetails.Duration,
+		Description:  video.Snippet.Description,
+		ThumbnailURL: video.Snippet.Thumbnails.Default.Url,
 	}
 
 	if tag != "" {
@@ -147,21 +152,10 @@ func serialize(video *youtube.Video, tag string) VideoMetadata {
 	}
 
 	if video.RecordingDetails != nil {
-
-		if video.RecordingDetails.RecordingDate != "" {
-			ts, _ := time.Parse(time.RFC3339, video.RecordingDetails.RecordingDate)
-			vm.RecordingDate = ts
-		}
-
 		if video.RecordingDetails.Location != nil {
-			if video.RecordingDetails.Location.Latitude != 0 {
-				vm.Longitude = video.RecordingDetails.Location.Latitude
-			}
-			if video.RecordingDetails.Location.Latitude != 0 {
-				vm.Latitude = video.RecordingDetails.Location.Longitude
-			}
+			vm.Longitude = video.RecordingDetails.Location.Latitude
+			vm.Latitude = video.RecordingDetails.Location.Longitude
 		}
-
 	}
 
 	return vm
