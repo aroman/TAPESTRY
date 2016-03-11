@@ -15,9 +15,11 @@ view Video {
 }
 
 view StackedImages {
-  <img class='third' src='//placehold.it/250x250/0000cc'/>
-  <img class='second' src='//placehold.it/250x250/00cc00'/>
-  <img class='first' src='//placehold.it/250x250/cc0000'/>
+  prop images
+
+  <img class='third' if={images[2]} src={images[2].thumbnail_url}/>
+  <img class='second' if={images[1]} src={images[1].thumbnail_url}/>
+  <img class='first' if={images[0]} src={images[0].thumbnail_url}/>
 
   offset = 10
 
@@ -39,7 +41,7 @@ view StackedImages {
   $img = {
     position: 'absolute',
     width: '100%',
-    height: 150,
+    height: 90,
   }
 }
 
@@ -47,32 +49,36 @@ view ClusterThumbnail {
 
   isSelected = false
 
-  <wrapper onClick={view.props.onClick}>
-    <input
-      type='checkbox'
-      defaultChecked={isSelected}
-      onChange={e => isSelected = e.target.checked}
-    />
-    <StackedImages/>
-    <detail class='title'>{view.props.videos[0].Title}</detail>
-    <detail class='location'>Geographic Location</detail>
-    <detail class='stats'>
-      <detail class='count'>{view.props.videos.length} videos, </detail>
-      <detail class='time'>1:06:40</detail>
-      <detail class='tag'>tag: {view.props.id}</detail>
-    </detail>
-  </wrapper>
+  on.click(view.props.onClick)
+
+  <input
+    type='checkbox'
+    defaultChecked={isSelected}
+    onChange={e => isSelected = e.target.checked}
+  />
+  <StackedImages images={view.props.videos.slice(0,3)}/>
+  <detail class='title'>{view.props.videos[0].title}</detail>
+  <br/>
+  <detail class='location'>{
+    `${view.props.videos[0].latitutde},${view.props.videos[0].longitude}`
+  }</detail>
+  <detail class='stats'>
+    <detail class='count'>{view.props.videos.length} videos, </detail>
+    <detail class='time'>1:06:40</detail>
+    <detail class='tag'>tag: {view.props.id}</detail>
+  </detail>
 
   $ = {
-    outline: '1px solid black',
+    // outline: '1px solid black',
     width: 250,
     fontSize: 12,
-    margin: 25
+    margin: 25,
+    flex: 1,
   }
 
   $StackedImages = {
-    width: '92%',
-    marginTop: -19
+    width: 120,
+    marginBottom: 30,
   }
 
   $input = {
@@ -81,7 +87,7 @@ view ClusterThumbnail {
 
   $title = {
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 12,
   }
 
   $location = {
@@ -124,9 +130,9 @@ view Main {
     .then(response => response.json())
     .then(json => {
       videos = json
-      clusters = _.map(_.groupBy(videos, 'Tag'), (videos, Tag) => {
+      clusters = _.map(_.groupBy(videos, 'tag'), (videos, tag) => {
         return {
-          _id: Tag || 'none',
+          _id: tag || 'none',
           videos,
         }
       })
@@ -141,23 +147,32 @@ view Main {
 
   <h1>Most Recent Clusters</h1>
 
-  <YouTube
-    if={clusterIndex !== null}
-    opts={{height: '289', width: '360'}}
-    videoId={clusters[clusterIndex]._id}
-  />
+  <viewer>
+    <YouTube
+      if={clusterIndex !== null}
+      opts={{height: '289', width: '360'}}
+      videoId={clusters[clusterIndex].videos[0].youtube_id}
+    />
+  </viewer>
 
-  <ClusterThumbnail
-    repeat={clusters}
-    id={_._id}
-    videos={_.videos}
-    onClick={() => {clusterIndex = clusters.indexOf(_); view.update()}}
-  />
+  <grid>
+    <ClusterThumbnail
+      repeat={clusters}
+      id={_._id}
+      videos={_.videos}
+      onClick={() => {clusterIndex = clusters.indexOf(_); view.update()}}
+    />
+  </grid>
 
   <DownloadButton onClick={() => alert('downloading...')}/>
 
   $ = {
     padding: 45,
     paddingTop: 20
+  }
+
+  $grid = {
+    display: 'flex',
+    flexFlow: 'row wrap',
   }
 }
