@@ -109,8 +109,6 @@ func main() {
 	printVideo(root)
 
 	videos, err := agent.getVideosFromIds(ids)
-	// first result is the root video. skip it.
-	videos = videos[1:]
 
 	log.WithFields(log.Fields{
 		"results": len(videos),
@@ -118,11 +116,11 @@ func main() {
 
 	for _, video := range videos {
 		printVideo(video)
-		// serialize tag is root video's id
 		if *dryRun {
 			log.Fatal("Dry-run mode; not writing videos to database")
 			continue
 		}
+		// serialize tag is root video's id
 		err = c.Insert(serialize(video, root.Id))
 		if err != nil {
 			if mgo.IsDup(err) {
