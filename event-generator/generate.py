@@ -1,6 +1,7 @@
 import csv
 import json
 import iso8601
+import datetime
 import eventful
 
 EVENTFUL_API_KEY = 'xfdS7HkksBW2gJgH'
@@ -37,27 +38,49 @@ def main():
         'concerts',
         'comedy',
         'festivals',
-        'holiday',
         'sports',
         'pets',
-        'politics'
-    )
+        'politics',
+        'music',
+        'festivals_parades',
+        'outdoors_recreation',
+        'performing_arts',
+        'animals',
+        'sales',
+        'science',
+        'technology',
+    ) #entire list available with api.call('/categories/list')['category']
 
     api = eventful.API(EVENTFUL_API_KEY)
     cities = parseCities()
 
+    dateIntervals = 10
+    base = datetime.datetime.today()
+    date_list = [base - datetime.timedelta(weeks=x) for x in range(0, 2*dateIntervals, 2)]
+
     for city in cities[:numberOfCities]:
-        events = api.call('/events/search',
-            sort_order='popularity',
-            page_size=numberOfEvents,
-            category=eventTypes,
-            date='Past',
-            within='50',
-            units='km',
-            l=','.join((city['latitude'], city['longitude'])),
-        )
-        for event in events['events']['event']:
-            print(genFlags(event, False))
+        for sort_order in ['popularity', 'relevance']:
+            for date in date_list:
+                start_date = (date - datetime.timedelta(weeks=2)).strftime('%Y%m%d')
+                end_date = date.strftime('%Y%m%d')
+                date = '%s00-%s00' %(start_date, end_date)
+                events = api.call('/events/search',
+                    sort_order=sort_order,
+                    page_size=numberOfEvents,
+                    category=eventTypes,
+                    date=date,
+                    within='50',
+                    units='km',
+                    l=','.join((city['latitude'], city['longitude'])),
+                )
+                for event in events['events']['event']:
+                    try:
+                        print(genFlags(event, True))
+                    except:
+                        # '--terms=%s' % json.dumps(event['title']),
+                        # TypeError: string indices must be integers, not str
+                        # TODO: figure out the source of the error
+                        print('Failure in generating flags from ', event)
 
 if __name__ == '__main__':
     main()
