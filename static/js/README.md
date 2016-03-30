@@ -7,6 +7,7 @@ Module loading, source map generation, polyfills, source compilation/transpilati
 To perform a one-off compile the JSX and LESS files to `app.js` (and the sourcemap), simply run webpack:
 
 ```sh
+$ npm install
 $ webpack
 ```
 
