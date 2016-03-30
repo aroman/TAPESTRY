@@ -6,6 +6,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/aroman/tapestry/database"
 	"gopkg.in/mgo.v2"
 )
 
@@ -16,7 +17,7 @@ var (
 func getAllVideos(w http.ResponseWriter, r *http.Request) {
 	var err error
 
-	var videos []VideoMetadata
+	var videos []database.VideoMetadata
 
 	err = c.Find(nil).All(&videos)
 	if err != nil {
@@ -42,7 +43,7 @@ func main() {
 	log.Debug("Connecting to database")
 
 	var err error
-	c, err = GetCollection("videos")
+	c, err = database.GetCollection("videos")
 
 	if err != nil {
 		panic(err)

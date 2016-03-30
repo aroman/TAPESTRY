@@ -4,6 +4,8 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/aroman/tapestry/database"
+	"github.com/aroman/tapestry/video-agents"
 	"google.golang.org/api/youtube/v3"
 	"gopkg.in/alecthomas/kingpin.v2"
 
@@ -11,7 +13,7 @@ import (
 )
 
 var (
-	agent     *Agent
+	agent     *vidagent.Agent
 	latitude  = kingpin.Flag("lat", "latitude of recording").Float64()
 	longitude = kingpin.Flag("long", "longitude of recording").Float64()
 	radius    = kingpin.Flag("radius", "radius of recording").String()
@@ -30,7 +32,7 @@ func truncate(str string, max int) string {
 }
 
 func printVideo(video *youtube.Video) {
-	vm := serialize(video, "")
+	vm := vidagent.Serialize(video, "")
 
 	log.WithFields(log.Fields{
 		"id":        vm.YoutubeID,
@@ -49,48 +51,48 @@ func main() {
 	var err error
 
 	log.Debug("Connecting to database")
-	c, err := GetCollection("videos")
+	c, err := database.GetCollection("videos")
 
 	if err != nil {
 		panic(err)
 	}
 
 	log.Debug("Creating YouTube Agent")
-	agent, err := CreateAgent("AIzaSyB-BZx063pUet0zDunRitL_kjwma68tU1c")
+	agent, err := vidagent.CreateAgent("AIzaSyB-BZx063pUet0zDunRitL_kjwma68tU1c")
 
 	if err != nil {
 		panic(err)
 	}
 
-	params := SearchParameters{
-		terms:     *terms,
-		latitude:  *latitude,
-		longitude: *longitude,
-		radius:    *radius,
+	params := vidagent.SearchParameters{
+		Terms:     *terms,
+		Latitude:  *latitude,
+		Longitude: *longitude,
+		Radius:    *radius,
 	}
 
 	if *before != "" {
-		params.tsBefore, err = time.Parse("01-02-2006", *before)
+		params.TsBefore, err = time.Parse("01-02-2006", *before)
 		if err != nil {
 			panic(err)
 		}
 	}
 
 	if *after != "" {
-		params.tsAfter, err = time.Parse("01-02-2006", *after)
+		params.TsAfter, err = time.Parse("01-02-2006", *after)
 		if err != nil {
 			panic(err)
 		}
 	}
 
 	log.Debugf("Performing root search: %v", *terms)
-	ids, err := agent.search(params)
+	ids, err := agent.Search(params)
 
 	if err != nil {
 		panic(err)
 	}
 
-	roots, err := agent.getVideosFromIds(ids)
+	roots, err := agent.GetVideosFromIds(ids)
 	if err != nil {
 		panic(err)
 	}
@@ -100,7 +102,7 @@ func main() {
 	}
 	root := roots[0]
 
-	ids, err = agent.search(agent.genParams(root))
+	ids, err = agent.Search(agent.GenParams(root))
 	if err != nil {
 		panic(err)
 	}
@@ -108,7 +110,7 @@ func main() {
 	log.Info("Root video identified")
 	printVideo(root)
 
-	videos, err := agent.getVideosFromIds(ids)
+	videos, err := agent.GetVideosFromIds(ids)
 
 	log.WithFields(log.Fields{
 		"results": len(videos),
@@ -120,8 +122,8 @@ func main() {
 			log.Fatal("Dry-run mode; not writing videos to database")
 			continue
 		}
-		// serialize tag is root video's id
-		err = c.Insert(serialize(video, root.Id))
+		// Serialize tag is root video's id
+		err = c.Insert(vidagent.Serialize(video, root.Id))
 		if err != nil {
 			if mgo.IsDup(err) {
 				log.Warn("Video already in database; skipping")
