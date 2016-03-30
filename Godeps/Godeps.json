@@ -1,51 +1,15 @@
 {
-	"ImportPath": "github.com/aroman/tapestry",
+	"ImportPath": "github.com/CMU-Perceptual-Computing-Lab/Wisper",
 	"GoVersion": "go1.6",
 	"Deps": [
 		{
-			"ImportPath": "github.com/alecthomas/template",
-			"Rev": "14fd436dd20c3cc65242a9f396b61bfc8a3926fc"
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.9.0-15-g219c8cb",
+			"Rev": "219c8cb75c258c552e999735be6df753ffc7afdc"
 		},
 		{
-			"ImportPath": "github.com/alecthomas/template/parse",
-			"Rev": "14fd436dd20c3cc65242a9f396b61bfc8a3926fc"
-		},
-		{
-			"ImportPath": "github.com/alecthomas/units",
-			"Rev": "2efee857e7cfd4f3d0138cc3cbb1b4966962b93a"
-		},
-		{
-			"ImportPath": "golang.org/x/net/context",
-			"Rev": "8968c61983e8f51a91b8c0ef25bf739278c89634"
-		},
-		{
-			"ImportPath": "golang.org/x/net/context/ctxhttp",
-			"Rev": "8968c61983e8f51a91b8c0ef25bf739278c89634"
-		},
-		{
-			"ImportPath": "google.golang.org/api/gensupport",
-			"Rev": "ad6c2cd766aa31d72fe3fce08189e0ba6e5002b9"
-		},
-		{
-			"ImportPath": "google.golang.org/api/googleapi",
-			"Rev": "ad6c2cd766aa31d72fe3fce08189e0ba6e5002b9"
-		},
-		{
-			"ImportPath": "google.golang.org/api/googleapi/internal/uritemplates",
-			"Rev": "ad6c2cd766aa31d72fe3fce08189e0ba6e5002b9"
-		},
-		{
-			"ImportPath": "google.golang.org/api/googleapi/transport",
-			"Rev": "ad6c2cd766aa31d72fe3fce08189e0ba6e5002b9"
-		},
-		{
-			"ImportPath": "google.golang.org/api/youtube/v3",
-			"Rev": "ad6c2cd766aa31d72fe3fce08189e0ba6e5002b9"
-		},
-		{
-			"ImportPath": "gopkg.in/alecthomas/kingpin.v2",
-			"Comment": "v2.1.11",
-			"Rev": "8cccfa8eb2e3183254457fb1749b2667fbc364c7"
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "50c6bc5e4292a1d4e65c6e9be5f53be28bcbe28e"
 		},
 		{
 			"ImportPath": "gopkg.in/mgo.v2",

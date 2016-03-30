@@ -5,14 +5,18 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/CMU-Perceptual-Computing-Lab/Wisper/database"
 	log "github.com/Sirupsen/logrus"
-	"github.com/aroman/tapestry/database"
 	"gopkg.in/mgo.v2"
 )
 
 var (
 	c *mgo.Collection
 )
+
+func index(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "templates/index.html")
+}
 
 func getAllVideos(w http.ResponseWriter, r *http.Request) {
 	var err error
@@ -32,7 +36,6 @@ func getAllVideos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Write(json)
 	log.Infof("Sent videos to client at %v", time.Now())
 }
@@ -49,8 +52,13 @@ func main() {
 		panic(err)
 	}
 
-	http.HandleFunc("/", getAllVideos)
+	http.HandleFunc("/", index)
+	http.HandleFunc("/api/videos", getAllVideos)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	log.Debug("Serving at http://localhost:8000/")
-	http.ListenAndServe(":8000", nil)
+	err = http.ListenAndServe(":8000", nil)
+	if err != nil {
+		panic(err)
+	}
 }
