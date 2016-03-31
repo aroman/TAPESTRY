@@ -50,8 +50,9 @@ class IconButton extends React.Component {
 
 class VideoThumbnail extends React.Component {
   render() {
+    if (!this.props.src) return <strong>invalid thumbnail</strong>
     return (
-      <div className='video-thumbnail'>
+      <div className='video-thumbnail' onClick={this.props.onClick}>
         <img src={this.props.src}/>
         <div className='buttons'>
           <IconButton name='flag'/>
@@ -69,6 +70,7 @@ class ClusterBrowser extends React.Component {
     super(props);
     this.state =  {
       index: 0,
+      selectedVideo: null,
     }
   }
 
@@ -76,21 +78,36 @@ class ClusterBrowser extends React.Component {
     const videos = this.props.videos
     const root = videos[0]
     const index = this.state.index
+
+    const thumbnails = _.range(0, videos.length).map(i => {
+      // swap thumbnail with index video if it's not the selected one.
+      if (i === this.state.selectedVideo) i = index;
+      return <VideoThumbnail
+        key={i}
+        onClick={e => this.setState({selectedVideo: i})}
+        src={videos[i].thumbnail_url}
+      />
+    })
+
+    const indexOfBigVideo = this.state.selectedVideo ? this.state.selectedVideo : index
+
     return (
       <div className='cluster-browser'>
         <h3>{root.title} Date + Geographic Location {videos.length} videos</h3>
         <h5>{videos[index].title}</h5>
-        <YouTube videoId={videos[index].youtube_id}/>
-        <VideoThumbnail src={videos[index + 1].thumbnail_url} />
-        <VideoThumbnail src={videos[index + 2].thumbnail_url}/>
-        <VideoThumbnail src={videos[index + 3].thumbnail_url}/>
+        <YouTube videoId={videos[indexOfBigVideo].youtube_id}/>
+        {thumbnails.slice(index + 1, index + 4)}
         <input
           className="scrubber"
           type="range"
           value={index}
-          onChange={e => this.setState({index: Number(e.target.value)})}
+          onChange={e => this.setState({
+            index: Number(e.target.value),
+            selectedVideo: null,
+          })}
           min={0}
-          max={this.props.videos.length - 4}
+          step={4}
+          max={this.props.videos.length - 1}
         />
         <div className="scrubber-label">
           {this.state.index + 1}-{this.state.index + 4}/{videos.length}
