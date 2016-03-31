@@ -68,49 +68,49 @@ class ClusterBrowser extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state =  {
+    this.state = {
       index: 0,
-      selectedVideo: null,
+      selectedIndex: null,
     }
   }
 
   render() {
+    const step = 4
     const videos = this.props.videos
-    const root = videos[0]
     const index = this.state.index
+    const selectedIndex = this.state.selectedIndex
+    const selectedVideo = videos[this.state.selectedIndex || index]
 
     const thumbnails = _.range(0, videos.length).map(i => {
-      // swap thumbnail with index video if it's not the selected one.
-      if (i === this.state.selectedVideo) i = index;
+      // swap video if its selected
+      i = (i === selectedIndex) ? index : i
       return <VideoThumbnail
         key={i}
-        onClick={e => this.setState({selectedVideo: i})}
+        onClick={e => this.setState({selectedIndex: i})}
         src={videos[i].thumbnail_url}
       />
     })
 
-    const indexOfBigVideo = this.state.selectedVideo ? this.state.selectedVideo : index
-
     return (
       <div className='cluster-browser'>
-        <h3>{root.title} Date + Geographic Location {videos.length} videos</h3>
-        <h5>{videos[index].title}</h5>
-        <YouTube videoId={videos[indexOfBigVideo].youtube_id}/>
-        {thumbnails.slice(index + 1, index + 4)}
+        <h3>Title/Date + Geographic Location {videos.length} videos</h3>
+        <h5>{selectedVideo.title}</h5>
+        <YouTube videoId={selectedVideo.youtube_id}/>
+        {thumbnails.slice(index + 1, index + step)}
         <input
           className="scrubber"
           type="range"
           value={index}
           onChange={e => this.setState({
             index: Number(e.target.value),
-            selectedVideo: null,
+            selectedIndex: null,
           })}
           min={0}
-          step={4}
-          max={this.props.videos.length - 1}
+          step={step}
+          max={videos.length - 1}
         />
         <div className="scrubber-label">
-          {this.state.index + 1}-{this.state.index + 4}/{videos.length}
+          {index + 1}-{index + step}/{videos.length}
         </div>
       </div>
     )
