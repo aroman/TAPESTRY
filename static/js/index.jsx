@@ -50,15 +50,9 @@ class IconButton extends React.Component {
 
 class VideoThumbnail extends React.Component {
   render() {
-    if (!this.props.src) return <strong>invalid thumbnail</strong>
     return (
       <div className='video-thumbnail' onClick={this.props.onClick}>
         <img src={this.props.src}/>
-        <div className='buttons'>
-          <IconButton name='flag'/>
-          <IconButton name='star'/>
-          <IconButton name='trash'/>
-        </div>
       </div>
     )
   }
@@ -84,18 +78,18 @@ class ClusterBrowser extends React.Component {
     const thumbnails = _.range(0, videos.length).map(i => {
       // swap video if its selected
       i = (i === selectedIndex) ? index : i
-      return <VideoThumbnail
+      return <img
         key={i}
-        onClick={e => this.setState({selectedIndex: i})}
+        className='video-thumbnail'
         src={videos[i].thumbnail_url}
+        onClick={e => this.setState({selectedIndex: i})}
       />
     })
 
     return (
       <div className='cluster-browser'>
-        <h3>Title/Date + Geographic Location {videos.length} videos</h3>
         <h5>{selectedVideo.title}</h5>
-        <YouTube videoId={selectedVideo.youtube_id}/>
+        <YouTube opts={{width:560, height:315}} videoId={selectedVideo.youtube_id}/>
         {thumbnails.slice(index + 1, index + step)}
         <input
           className="scrubber"
@@ -109,8 +103,14 @@ class ClusterBrowser extends React.Component {
           step={step}
           max={videos.length - 1}
         />
-        <div className="scrubber-label">
-          {index + 1}-{index + step}/{videos.length}
+        <div className='controls'>
+          <div className='scrubber-label'>
+            {index + 1}-{index + step}/{videos.length}
+          </div>
+          <IconButton name='flag'/>
+          <IconButton name='star'/>
+          <IconButton name='trash'/>
+          <button>Next</button>
         </div>
       </div>
     )
@@ -121,7 +121,7 @@ class ClusterList extends React.Component {
 
   render() {
     return (
-      <div>
+      <div className='cluster-list'>
         <strong>Next Clusters</strong>
       </div>
     )
@@ -171,8 +171,8 @@ class Main extends React.Component {
     }
     return (
       <div className='main'>
-        <ClusterList clusters={this.state.clusters}/>
         <ClusterBrowser videos={this.state.clusters[this.state.index].videos}/>
+        <ClusterList clusters={this.state.clusters}/>
       </div>
     )
   }
