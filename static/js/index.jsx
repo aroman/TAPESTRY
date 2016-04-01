@@ -122,7 +122,7 @@ class ClusterList extends React.Component {
   render() {
     return (
       <div className='cluster-list'>
-        <strong>Next Clusters</strong>
+        <h3>Next Clusters</h3>
       </div>
     )
   }
