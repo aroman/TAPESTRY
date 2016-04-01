@@ -23,10 +23,10 @@ import './style.less'
    setItem({ isSelected: !c.isSelected }, c, cs)
 
 const FILTER_MODE = {
-  Unmarked: 1,
-  Star: 2,
-  Flag: 3,
-  Trash: 4,
+  Unmarked: 'unmarked',
+  Star: 'star',
+  Flag: 'flag',
+  Trash: 'trash',
 }
 
 class DownloadButton extends React.Component {
@@ -49,20 +49,21 @@ class DownloadButton extends React.Component {
 class IconButton extends React.Component {
 
   render() {
-    let color = '#fff'
+    let color = 'white'
+
+    if (this.props.isDark) {
+      color = 'black'
+    }
 
     if (this.props.isActive) {
       color = 'red'
     }
 
-    // if (this.props.name == 'star') color = 'yellow'
-    // if (this.props.name == 'flag') color = 'red'
-    // if (this.props.name == 'trash') color = 'white'
-
     return <FontAwesome
       name={this.props.name}
       style={{color: color}}
-      onClick={() => alert(this.props.name)}
+      size='2x'
+      onClick={this.props.onClick}
       className='icon-button'
       />
   }
@@ -86,6 +87,10 @@ class ClusterBrowser extends React.Component {
       index: 0,
       selectedIndex: null,
     }
+  }
+
+  assignLabel() {
+    this.props.onNext();
   }
 
   render() {
@@ -127,10 +132,19 @@ class ClusterBrowser extends React.Component {
           <div className='scrubber-label'>
             {index + 1}-{index + step}/{videos.length}
           </div>
-          <IconButton name='flag'/>
-          <IconButton name='star'/>
-          <IconButton name='trash'/>
-          <button>Next</button>
+          <IconButton
+            name='flag'
+            onClick={() => this.assignLabel(FILTER_MODE.Flag)}
+          />
+          <IconButton
+            name='star'
+            onClick={() => this.assignLabel(FILTER_MODE.Star)}
+          />
+          <IconButton
+            name='trash'
+            onClick={() => this.assignLabel(FILTER_MODE.Trash)}
+          />
+          <button onClick={this.props.onNext}>Next</button>
         </div>
       </div>
     )
@@ -146,16 +160,27 @@ class ClusterList extends React.Component {
     }
   }
 
+  filterClicked(mode) {
+    if (this.state.filterMode == mode) {
+      this.setState({filterMode: FILTER_MODE.Unmarked})
+      return;
+    }
+    this.setState({
+      filterMode: mode,
+    })
+  }
+
   render() {
     const clusters = this.props.clusters
-    console.log(clusters)
+    const selectedIndex = this.props.selectedIndex
 
-    const thumbnails = _.range(0, 10 || clusters.length).map(i => {
-      // swap video if its selected
-      // i = (i === selectedIndex) ? index : i
+    const thumbnails = _.range(0, 25 || clusters.length).map(i => {
       const root = clusters[i].videos[0]
+
       return (
-        <div className='sidebar-item'>
+        <div onClick={() => this.props.onChange(i)} className={classNames('sidebar-item', {
+            selected: i == selectedIndex
+          })}>
           <img
             key={i}
             className='sidebar-item-img'
@@ -172,9 +197,24 @@ class ClusterList extends React.Component {
           <h3>Next Clusters</h3>
           <div className='filters'>
             <span>Filters</span>
-            <IconButton name='flag'/>
-            <IconButton name='star'/>
-            <IconButton name='trash'/>
+            <IconButton
+              name='flag'
+              isDark={true}
+              isActive={this.state.filterMode == FILTER_MODE.Flag}
+              onClick={() => this.filterClicked(FILTER_MODE.Flag)}
+            />
+            <IconButton
+              name='star'
+              isDark={true}
+              isActive={this.state.filterMode == FILTER_MODE.Star}
+              onClick={() => this.filterClicked(FILTER_MODE.Star)}
+            />
+            <IconButton
+              name='trash'
+              isDark={true}
+              isActive={this.state.filterMode == FILTER_MODE.Trash}
+              onClick={() => this.filterClicked(FILTER_MODE.Trash)}
+            />
           </div>
         </div>
         <div className='videos'>
@@ -231,9 +271,13 @@ class Main extends React.Component {
     }
     return (
       <div className='main'>
-        <ClusterBrowser videos={this.state.clusters[this.state.index].videos}/>
+        <ClusterBrowser
+          videos={this.state.clusters[this.state.index].videos}
+          onNext={() => this.setState({index: this.state.index + 1})}
+        />
         <ClusterList
           clusters={this.state.clusters}
+          selectedIndex={this.state.index}
           onChange={clusterIndex => this.setState({index: clusterIndex})}
         />
       </div>

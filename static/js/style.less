@@ -10,6 +10,10 @@ body {
   display: none !important;
 }
 
+.fa:hover {
+  cursor: pointer;
+}
+
 .main {
   padding: 45px;
   margin-top: 50px;
@@ -29,7 +33,9 @@ body {
 }
 
 h5 {
-  margin-top: 0;
+  font-size: 18px;
+  margin-top: 20px;
+  margin-bottom: 10px;
 }
 
 .cluster-browser {
@@ -43,7 +49,33 @@ h5 {
 
   .scrubber-label {
     display: inline;
-    vertical-align: center;
+    font-size: 24px;
+    margin-right: 20px;
+    vertical-align: text-bottom;
+  }
+
+  button {
+    margin-left: 20px;
+    background-color: #3793e6;
+    border: 0;
+    border-radius: 5px;
+    outline: 0;
+    color: white;
+    font-size: 16px;
+    padding: 6px;
+    padding-left: 16px;
+    padding-right: 16px;
+    font-weight: 400;
+    vertical-align: text-bottom;
+
+    &:hover {
+      cursor: pointer;
+      background-color: darken(#3793e6, 10%);
+    }
+
+    &:active {
+      background-color: darken(#3793e6, 15%);
+    }
   }
 
   .icon-button {
@@ -56,18 +88,20 @@ h5 {
   width: 400px;
   background-color: rgb(233, 233, 233);
   color: rgb(124, 124, 124);
-  margin-top: 40px;
   padding-left: 10px;
+  border-radius: 5px;
   padding-right: 20px;
   padding-top: 20px;
   height: 100%;
+  margin-top: -14px;
 
   .list-header {
-    padding-left: 20px;
+    padding-left: 10px;
+    margin-bottom: -10px;
   }
 
   .videos {
-    height: 420px;
+    height: 490px;
     overflow-y: scroll;
   }
 
@@ -85,10 +119,10 @@ h5 {
   .filters {
     display: inline-block;
     float:right;
-    margin-top: 5px;
+    margin-top: 1px;
 
     .fa {
-      color: black !important;
+      font-size: 1.25em;
     }
 
   }
@@ -114,9 +148,14 @@ h5 {
   padding-top: 5px;
   padding-bottom: 5px;
   padding-left: 10px;
+  width: 100%;
+
+  &.selected {
+    background-color: darken(#fff, 20%);
+  }
 
   &:hover {
-    background-color: darken(#fff, 20%);
+    background-color: darken(#fff, 15%);
     cursor: pointer;
   }
 
