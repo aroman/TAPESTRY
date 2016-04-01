@@ -22,6 +22,13 @@ import './style.less'
  const toggleSelected = (c, cs) =>
    setItem({ isSelected: !c.isSelected }, c, cs)
 
+const FILTER_MODE = {
+  Unmarked: 1,
+  Star: 2,
+  Flag: 3,
+  Trash: 4,
+}
+
 class DownloadButton extends React.Component {
   render() {
     const numClusters = this.props.numClusters
@@ -38,10 +45,23 @@ class DownloadButton extends React.Component {
   // }
 }
 
+
 class IconButton extends React.Component {
+
   render() {
+    let color = '#fff'
+
+    if (this.props.isActive) {
+      color = 'red'
+    }
+
+    // if (this.props.name == 'star') color = 'yellow'
+    // if (this.props.name == 'flag') color = 'red'
+    // if (this.props.name == 'trash') color = 'white'
+
     return <FontAwesome
       name={this.props.name}
+      style={{color: color}}
       onClick={() => alert(this.props.name)}
       className='icon-button'
       />
@@ -119,10 +139,47 @@ class ClusterBrowser extends React.Component {
 
 class ClusterList extends React.Component {
 
+  constructor(props) {
+    super(props)
+    this.state = {
+      filterMode: FILTER_MODE.Unmarked,
+    }
+  }
+
   render() {
+    const clusters = this.props.clusters
+    console.log(clusters)
+
+    const thumbnails = _.range(0, 10 || clusters.length).map(i => {
+      // swap video if its selected
+      // i = (i === selectedIndex) ? index : i
+      const root = clusters[i].videos[0]
+      return (
+        <div className='sidebar-item'>
+          <img
+            key={i}
+            className='sidebar-item-img'
+            src={root.thumbnail_url}
+          />
+          <span className='sidebar-item-title'>{root.title}</span>
+        </div>
+      )
+    })
+
     return (
       <div className='cluster-list'>
-        <h3>Next Clusters</h3>
+        <div className='list-header'>
+          <h3>Next Clusters</h3>
+          <div className='filters'>
+            <span>Filters</span>
+            <IconButton name='flag'/>
+            <IconButton name='star'/>
+            <IconButton name='trash'/>
+          </div>
+        </div>
+        <div className='videos'>
+          {thumbnails}
+        </div>
       </div>
     )
   }
@@ -165,14 +222,20 @@ class Main extends React.Component {
   }
 
   render() {
-    console.log(this.state);
     if (!this.state.clusters.length > 0) {
-      return <strong>Loading...</strong>
+      return (
+        <div className='loading'>
+          <img src='/static/img/loading.gif'/>
+        </div>
+      )
     }
     return (
       <div className='main'>
         <ClusterBrowser videos={this.state.clusters[this.state.index].videos}/>
-        <ClusterList clusters={this.state.clusters}/>
+        <ClusterList
+          clusters={this.state.clusters}
+          onChange={clusterIndex => this.setState({index: clusterIndex})}
+        />
       </div>
     )
   }
