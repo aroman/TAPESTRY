@@ -11,18 +11,18 @@ import YouTube from 'react-youtube'
 
 import './style.less'
 
- const setItem = (obj, x, xs) =>
-   xs.map(_x => _x.id == x.id ? Object.assign(x, obj) : _x)
+const setItem = (obj, x, xs) =>
+ xs.map(_x => _x.id == x.id ? Object.assign(x, obj) : _x)
 
- const setAll = (obj, xs) => xs.map(x => Object.assign(x, obj))
+const setAll = (obj, xs) => xs.map(x => Object.assign(x, obj))
 
- const browse = (c, cs) =>
-   setItem({ isBrowsing: true }, c, setAll({ isBrowsing : false }, cs))
+const browse = (c, cs) =>
+ setItem({ isBrowsing: true }, c, setAll({ isBrowsing : false }, cs))
 
- const toggleSelected = (c, cs) =>
-   setItem({ isSelected: !c.isSelected }, c, cs)
+const toggleSelected = (c, cs) =>
+ setItem({ isSelected: !c.isSelected }, c, cs)
 
-const FILTER_MODE = {
+const LABEL_TYPE = {
   Unmarked: 'unmarked',
   Star: 'star',
   Flag: 'flag',
@@ -44,7 +44,6 @@ class DownloadButton extends React.Component {
   //   marginTop: 10,
   // }
 }
-
 
 class IconButton extends React.Component {
 
@@ -89,13 +88,12 @@ class ClusterBrowser extends React.Component {
     }
   }
 
-  assignLabel() {
-    this.props.onNext();
-  }
-
   render() {
+    console.log(this.props)
     const step = 4
-    const videos = this.props.videos
+    const cluster = this.props.cluster
+    const videos = cluster.videos
+
     const index = this.state.index
     const selectedIndex = this.state.selectedIndex
     const selectedVideo = videos[this.state.selectedIndex || index]
@@ -124,7 +122,7 @@ class ClusterBrowser extends React.Component {
             index: Number(e.target.value),
             selectedIndex: null,
           })}
-          min={0}
+          min={0}x
           step={step}
           max={videos.length - 1}
         />
@@ -134,15 +132,18 @@ class ClusterBrowser extends React.Component {
           </div>
           <IconButton
             name='flag'
-            onClick={() => this.assignLabel(FILTER_MODE.Flag)}
+            isActive={cluster.label == LABEL_TYPE.Flag}
+            onClick={() => this.props.onLabel(cluster, LABEL_TYPE.Flag)}
           />
           <IconButton
             name='star'
-            onClick={() => this.assignLabel(FILTER_MODE.Star)}
+            isActive={cluster.label == LABEL_TYPE.Star}
+            onClick={() => this.props.onLabel(cluster, LABEL_TYPE.Star)}
           />
           <IconButton
             name='trash'
-            onClick={() => this.assignLabel(FILTER_MODE.Trash)}
+            isActive={cluster.label == LABEL_TYPE.Trash}
+            onClick={() => this.props.onLabel(cluster, LABEL_TYPE.Trash)}
           />
           <button onClick={this.props.onNext}>Next</button>
         </div>
@@ -156,13 +157,13 @@ class ClusterList extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      filterMode: FILTER_MODE.Unmarked,
+      filterMode: LABEL_TYPE.Unmarked,
     }
   }
 
   filterClicked(mode) {
     if (this.state.filterMode == mode) {
-      this.setState({filterMode: FILTER_MODE.Unmarked})
+      this.setState({filterMode: LABEL_TYPE.Unmarked})
       return;
     }
     this.setState({
@@ -174,11 +175,15 @@ class ClusterList extends React.Component {
     const clusters = this.props.clusters
     const selectedIndex = this.props.selectedIndex
 
-    const thumbnails = _.range(0, 25 || clusters.length).map(i => {
-      const root = clusters[i].videos[0]
+    let filcos = clusters.filter(cluster => cluster.label == this.state.filterMode)
+    // let filcos = clusters;
+    console.log(filcos)
+
+    const thumbnails = _.range(filcos.length).map(i => {
+      const root = filcos[i].videos[0]
 
       return (
-        <div onClick={() => this.props.onChange(i)} className={classNames('sidebar-item', {
+        <div key={filcos[i].id} onClick={() => this.props.onChange(i)} className={classNames('sidebar-item', {
             selected: i == selectedIndex
           })}>
           <img
@@ -200,20 +205,20 @@ class ClusterList extends React.Component {
             <IconButton
               name='flag'
               isDark={true}
-              isActive={this.state.filterMode == FILTER_MODE.Flag}
-              onClick={() => this.filterClicked(FILTER_MODE.Flag)}
+              isActive={this.state.filterMode == LABEL_TYPE.Flag}
+              onClick={() => this.filterClicked(LABEL_TYPE.Flag)}
             />
             <IconButton
               name='star'
               isDark={true}
-              isActive={this.state.filterMode == FILTER_MODE.Star}
-              onClick={() => this.filterClicked(FILTER_MODE.Star)}
+              isActive={this.state.filterMode == LABEL_TYPE.Star}
+              onClick={() => this.filterClicked(LABEL_TYPE.Star)}
             />
             <IconButton
               name='trash'
               isDark={true}
-              isActive={this.state.filterMode == FILTER_MODE.Trash}
-              onClick={() => this.filterClicked(FILTER_MODE.Trash)}
+              isActive={this.state.filterMode == LABEL_TYPE.Trash}
+              onClick={() => this.filterClicked(LABEL_TYPE.Trash)}
             />
           </div>
         </div>
@@ -235,6 +240,17 @@ class Main extends React.Component {
     }
   }
 
+  onClickLabel(cluster, label) {
+    if (cluster.label == label) {
+      label = LABEL_TYPE.Unmarked;
+    }
+    this.setState({
+      clusters: setItem({label: label}, cluster, this.state.clusters),
+    })
+
+    localStorage.setItem(cluster.id, label)
+  }
+
   componentDidMount() {
     this.load()
   }
@@ -247,7 +263,8 @@ class Main extends React.Component {
       const videos = json
       const clusters = _.map(_.groupBy(videos, 'tag'), (videos, tag) => {
         return {
-          _id: tag || 'none',
+          id: tag || 'none',
+          label: localStorage[tag] || LABEL_TYPE.Unmarked,
           videos,
         }
       })
@@ -272,7 +289,8 @@ class Main extends React.Component {
     return (
       <div className='main'>
         <ClusterBrowser
-          videos={this.state.clusters[this.state.index].videos}
+          cluster={this.state.clusters[this.state.index]}
+          onLabel={this.onClickLabel.bind(this)}
           onNext={() => this.setState({index: this.state.index + 1})}
         />
         <ClusterList
