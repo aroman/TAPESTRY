@@ -84,7 +84,9 @@ class ClusterBrowser extends React.Component {
       <div className='cluster-browser'>
         <h5>{selectedVideo.title}</h5>
         <YouTube opts={{width:560, height:315}} videoId={selectedVideo.youtube_id}/>
-        {thumbnails.slice(index + 1, index + step)}
+        <div className='thumbnails'>
+          {thumbnails.slice(index + 1, index + step)}
+        </div>
         <input
           className="scrubber"
           type="range"
@@ -99,7 +101,7 @@ class ClusterBrowser extends React.Component {
         />
         <div className='controls'>
           <div className='scrubber-label'>
-            {index + 1}-{index + step}/{videos.length}
+            {index + 1}-{Math.min(videos.length, index + step)}/{videos.length}
           </div>
           {filterButtons}
           <button onClick={this.props.onNext}>Next</button>
