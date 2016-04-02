@@ -5,7 +5,6 @@ import 'moment-duration-format'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import classNames from 'classnames'
-
 import FontAwesome from 'react-fontawesome'
 import YouTube from 'react-youtube'
 
@@ -14,35 +13,11 @@ import './style.less'
 const setItem = (obj, x, xs) =>
  xs.map(_x => _x.id == x.id ? Object.assign(x, obj) : _x)
 
-const setAll = (obj, xs) => xs.map(x => Object.assign(x, obj))
-
-const browse = (c, cs) =>
- setItem({ isBrowsing: true }, c, setAll({ isBrowsing : false }, cs))
-
-const toggleSelected = (c, cs) =>
- setItem({ isSelected: !c.isSelected }, c, cs)
-
 const LABEL_TYPE = {
   Unmarked: 'unmarked',
   Star: 'star',
   Flag: 'flag',
   Trash: 'trash',
-}
-
-class DownloadButton extends React.Component {
-  render() {
-    const numClusters = this.props.numClusters
-    const numVideos = this.props.numVideos
-
-    return (
-      <button disabled={numClusters == 0} onClick={this.props.onClick}>Download {numClusters} Clusters ({numVideos} videos)</button>
-    )
-  }
-
-  // $button = {
-  //   fontSize: 20,
-  //   marginTop: 10,
-  // }
 }
 
 class IconButton extends React.Component {
@@ -65,16 +40,6 @@ class IconButton extends React.Component {
       onClick={this.props.onClick}
       className='icon-button'
       />
-  }
-}
-
-class VideoThumbnail extends React.Component {
-  render() {
-    return (
-      <div className='video-thumbnail' onClick={this.props.onClick}>
-        <img src={this.props.src}/>
-      </div>
-    )
   }
 }
 
@@ -176,8 +141,6 @@ class ClusterList extends React.Component {
     const selectedIndex = this.props.selectedIndex
 
     let filcos = clusters.filter(cluster => cluster.label == this.state.filterMode)
-    // let filcos = clusters;
-    console.log(filcos)
 
     const thumbnails = _.range(filcos.length).map(i => {
       const root = filcos[i].videos[0]
@@ -187,7 +150,6 @@ class ClusterList extends React.Component {
             selected: i == selectedIndex
           })}>
           <img
-            key={i}
             className='sidebar-item-img'
             src={root.thumbnail_url}
           />
