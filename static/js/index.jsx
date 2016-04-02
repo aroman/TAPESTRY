@@ -54,11 +54,9 @@ class ClusterBrowser extends React.Component {
   }
 
   render() {
-    console.log(this.props)
     const step = 4
     const cluster = this.props.cluster
     const videos = cluster.videos
-
     const index = this.state.index
     const selectedIndex = this.state.selectedIndex
     const selectedVideo = videos[this.state.selectedIndex || index]
@@ -71,6 +69,14 @@ class ClusterBrowser extends React.Component {
         className='video-thumbnail'
         src={videos[i].thumbnail_url}
         onClick={e => this.setState({selectedIndex: i})}
+      />
+    })
+
+    const filterButtons = _.map(LABEL_TYPE, (value, key) => {
+      return <IconButton
+        name={value}
+        isActive={cluster.label == LABEL_TYPE[key]}
+        onClick={() => this.props.onSetLabel(cluster, LABEL_TYPE[key])}
       />
     })
 
@@ -95,21 +101,7 @@ class ClusterBrowser extends React.Component {
           <div className='scrubber-label'>
             {index + 1}-{index + step}/{videos.length}
           </div>
-          <IconButton
-            name='flag'
-            isActive={cluster.label == LABEL_TYPE.Flag}
-            onClick={() => this.props.onLabel(cluster, LABEL_TYPE.Flag)}
-          />
-          <IconButton
-            name='star'
-            isActive={cluster.label == LABEL_TYPE.Star}
-            onClick={() => this.props.onLabel(cluster, LABEL_TYPE.Star)}
-          />
-          <IconButton
-            name='trash'
-            isActive={cluster.label == LABEL_TYPE.Trash}
-            onClick={() => this.props.onLabel(cluster, LABEL_TYPE.Trash)}
-          />
+          {filterButtons}
           <button onClick={this.props.onNext}>Next</button>
         </div>
       </div>
@@ -158,30 +150,22 @@ class ClusterList extends React.Component {
       )
     })
 
+    const filterButtons = _.map(LABEL_TYPE, (value, key) => {
+      return <IconButton
+        name={value}
+        isDark={true}
+        isActive={this.state.filterMode == LABEL_TYPE[key]}
+        onClick={() => this.filterClicked(LABEL_TYPE[key])}
+      />
+    })
+
     return (
       <div className='cluster-list'>
         <div className='list-header'>
           <h3>Next Clusters</h3>
           <div className='filters'>
             <span>Filters</span>
-            <IconButton
-              name='flag'
-              isDark={true}
-              isActive={this.state.filterMode == LABEL_TYPE.Flag}
-              onClick={() => this.filterClicked(LABEL_TYPE.Flag)}
-            />
-            <IconButton
-              name='star'
-              isDark={true}
-              isActive={this.state.filterMode == LABEL_TYPE.Star}
-              onClick={() => this.filterClicked(LABEL_TYPE.Star)}
-            />
-            <IconButton
-              name='trash'
-              isDark={true}
-              isActive={this.state.filterMode == LABEL_TYPE.Trash}
-              onClick={() => this.filterClicked(LABEL_TYPE.Trash)}
-            />
+            {filterButtons}
           </div>
         </div>
         <div className='videos'>
@@ -202,14 +186,13 @@ class Main extends React.Component {
     }
   }
 
-  onClickLabel(cluster, label) {
+  onSetLabel(cluster, label) {
     if (cluster.label == label) {
       label = LABEL_TYPE.Unmarked;
     }
     this.setState({
       clusters: setItem({label: label}, cluster, this.state.clusters),
     })
-
     localStorage.setItem(cluster.id, label)
   }
 
@@ -252,7 +235,7 @@ class Main extends React.Component {
       <div className='main'>
         <ClusterBrowser
           cluster={this.state.clusters[this.state.index]}
-          onLabel={this.onClickLabel.bind(this)}
+          onSetLabel={this.onSetLabel.bind(this)}
           onNext={() => this.setState({index: this.state.index + 1})}
         />
         <ClusterList
