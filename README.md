@@ -2,15 +2,15 @@
 
 A set of tools to find public, user-uploaded videos taken of particular events, such as concerts, sporting events, and other occurrences with high spatial and temporal locality.
 
-Currently, tapestry only supports mining and exploring content from YouTube.
+Currently, tapestry only supports mining from YouTube.
 
 ### mining for clusters
 
-#### compiling the miner
+#### compiling the YouTube miner
 
 1. install dependencies: `go get`
-2. `go build miner/mine.go`
-3. `./mine`
+2. `go build -o mine-youtube miners/youtube.go`
+3. `./mine-youtube`
 
 #### operating the miner
 

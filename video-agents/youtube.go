@@ -1,4 +1,4 @@
-package vidagent
+package vidagents
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/CMU-Perceptual-Computing-Lab/Wisper/database"
+	"github.com/CMU-Perceptual-Computing-Lab/Wisper/models"
 
 	"google.golang.org/api/googleapi/transport"
 	"google.golang.org/api/youtube/v3"
@@ -90,8 +90,10 @@ func (agent Agent) Search(params SearchParameters) ([]string, error) {
 }
 
 // takes a list of video IDs and returns Video objects containing metadata
-func (agent Agent) GetVideosFromIds(ids []string) ([]*youtube.Video, error) {
-	var videos []*youtube.Video
+func (agent Agent) GetVideosFromIds(ids []string) ([]models.Video, error) {
+
+	var videos []models.Video
+
 	nextPageToken := ""
 	for {
 		call := agent.service.Videos.List("id,recordingDetails,snippet,contentDetails")
@@ -104,7 +106,9 @@ func (agent Agent) GetVideosFromIds(ids []string) ([]*youtube.Video, error) {
 			return nil, err
 		}
 
-		videos = append(videos, response.Items...)
+		for _, item := range response.Items {
+			videos = append(videos, Serialize(item))
+		}
 
 		nextPageToken = response.NextPageToken
 
@@ -116,31 +120,29 @@ func (agent Agent) GetVideosFromIds(ids []string) ([]*youtube.Video, error) {
 	return videos, nil
 }
 
-func (agent Agent) GenParams(video *youtube.Video) SearchParameters {
-
-	vm := Serialize(video, "")
+func (agent Agent) GenParams(video models.Video) SearchParameters {
 
 	params := SearchParameters{
-		Terms: vm.Title,
+		Terms: video.Title,
 	}
 
-	params.TsAfter = vm.PublishedAt.AddDate(0, 0, -1)
-	params.TsBefore = vm.PublishedAt.AddDate(0, 0, +1)
+	params.TsAfter = video.PublishedAt.AddDate(0, 0, -1)
+	params.TsBefore = video.PublishedAt.AddDate(0, 0, +1)
 
-	if vm.Longitude != 0 {
-		params.Longitude = vm.Longitude
-		params.Latitude = vm.Latitude
+	if video.Longitude != 0 {
+		params.Longitude = video.Longitude
+		params.Latitude = video.Latitude
 		params.Radius = "100km"
 	}
 
 	return params
 }
 
-func Serialize(video *youtube.Video, tag string) database.VideoMetadata {
+func Serialize(video *youtube.Video) models.Video {
 
 	ts, _ := time.Parse(time.RFC3339, video.Snippet.PublishedAt)
 
-	vm := database.VideoMetadata{
+	v := models.Video{
 		Title:        video.Snippet.Title,
 		PublishedAt:  ts,
 		YoutubeID:    video.Id,
@@ -149,16 +151,12 @@ func Serialize(video *youtube.Video, tag string) database.VideoMetadata {
 		ThumbnailURL: video.Snippet.Thumbnails.Default.Url,
 	}
 
-	if tag != "" {
-		vm.Tag = tag
-	}
-
 	if video.RecordingDetails != nil {
 		if video.RecordingDetails.Location != nil {
-			vm.Longitude = video.RecordingDetails.Location.Latitude
-			vm.Latitude = video.RecordingDetails.Location.Longitude
+			v.Longitude = video.RecordingDetails.Location.Latitude
+			v.Latitude = video.RecordingDetails.Location.Longitude
 		}
 	}
 
-	return vm
+	return v
 }
