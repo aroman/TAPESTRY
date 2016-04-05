@@ -20,7 +20,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 }
 
 type ClusterJSON struct {
-	*models.Cluster
+	models.Cluster
 	RootVideo models.Video   `json:"root_video"`
 	Videos    []models.Video `json:"videos"`
 }
@@ -37,8 +37,7 @@ func getAllClusters(w http.ResponseWriter, r *http.Request) {
 	var clustersJSON []ClusterJSON
 
 	for _, cluster := range clusters {
-		cj := ClusterJSON{}
-		cj.Cluster = &cluster
+		cj := ClusterJSON{Cluster: cluster}
 
 		err := DB.C("videos").FindId(cluster.RootVideoID).One(&cj.RootVideo)
 		if err != nil {
