@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	agent     *vidagent.Agent
+	agent     *vidagents.Agent
 	latitude  = kingpin.Flag("lat", "latitude of recording").Float64()
 	longitude = kingpin.Flag("long", "longitude of recording").Float64()
 	radius    = kingpin.Flag("radius", "radius of recording").String()
@@ -48,13 +48,13 @@ func main() {
 	DB := models.GetDB()
 
 	log.Debug("Creating YouTube Agent")
-	agent, err := vidagent.CreateAgent("AIzaSyB-BZx063pUet0zDunRitL_kjwma68tU1c")
+	agent, err := vidagents.CreateAgent("AIzaSyB-BZx063pUet0zDunRitL_kjwma68tU1c")
 
 	if err != nil {
 		panic(err)
 	}
 
-	params := vidagent.SearchParameters{
+	params := vidagents.SearchParameters{
 		Terms:     *terms,
 		Latitude:  *latitude,
 		Longitude: *longitude,
