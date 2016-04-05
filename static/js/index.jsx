@@ -77,7 +77,7 @@ class ClusterBrowser extends React.Component {
         key={key}
         name={value}
         isActive={this.props.cluster.label == LABEL[key]}
-        onClick={() => this.props.onSetLabel(cluster, LABEL[key])}
+        onClick={() => this.props.onSetLabel(this.props.cluster, LABEL[key])}
       />
     })
 
@@ -198,13 +198,22 @@ class Main extends React.Component {
   }
 
   onSetLabel(cluster, label) {
+    const prevLabel = cluster.label
     if (cluster.label == label) {
       label = LABEL.Unmarked;
     }
     this.setState({
       clusters: setItem({label: label}, cluster, this.state.clusters),
     })
-    localStorage.setItem(cluster.id, label)
+    fetch(`/api/cluster?id=${cluster.id}&label=${label}`)
+    .catch(err => {
+      alert('whoops, something broke. check the console.')
+      console.error(err)
+      this.setState({
+        clusters: setItem({label: prevLabel}, cluster, this.state.clusters),
+      })
+    })
+
   }
 
   componentDidMount() {
