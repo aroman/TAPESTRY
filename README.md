@@ -24,10 +24,10 @@ You probably don't want to run it by hand, though.
 Connect the event generator to the miner like so:
 ```
 $ cd event-generator
-$ python generate.py | uniq | tr '\n' '\0' | xargs -0 -n1  ../mine
+$ python generate.py | uniq | tr '\n' '\0' | xargs -0 -n1  ../mine-youtube
 ```
 
-For a full reference of supported parameters, read the source (`miner/mine.go`).
+For a full reference of supported parameters, read the source (`miners/youtube.go`).
 
 ### exploring clusters
 
