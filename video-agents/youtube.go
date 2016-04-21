@@ -120,6 +120,37 @@ func (agent Agent) GetVideosFromIds(ids []string) ([]models.Video, error) {
 	return videos, nil
 }
 
+func (agent Agent) SearchRelatedVideos(id string) ([]string, error) {
+
+	var ids []string
+
+	nextPageToken := ""
+	for i := 0; i < 5; i++ {
+		call := agent.service.Search.List("id").Type("video")
+
+		call.RelatedToVideoId(id)
+
+		call.PageToken(nextPageToken)
+		response, err := call.Do()
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, result := range response.Items {
+			ids = append(ids, result.Id.VideoId)
+		}
+
+		nextPageToken = response.NextPageToken
+
+		if nextPageToken == "" {
+			break
+		}
+	}
+
+	return ids, nil
+}
+
 func (agent Agent) GenParams(video models.Video) SearchParameters {
 
 	params := SearchParameters{
