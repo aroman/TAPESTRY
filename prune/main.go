@@ -1,4 +1,4 @@
-// Removes trashed videos and clusters. Supports the --dry flag.
+// Removes trashed videos and clusters. No-op without --for-sure
 
 package main
 
@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	dryRun = kingpin.Flag("dry", "dry run").Bool()
+	forSure = kingpin.Flag("for-sure", "really delete stuff").Bool()
 )
 
 func main() {
@@ -33,8 +33,8 @@ func main() {
 		"count": len(trashedClusters),
 	}).Info("found trashed clusters")
 
-	if *dryRun {
-		log.Fatalf("dry-run; exiting")
+	if !*forSure {
+		log.Fatalf("you didn't pass --for-sure, exiting safely...")
 	}
 
 	trashedClusterIDs = make([]bson.ObjectId, len(trashedClusters))
