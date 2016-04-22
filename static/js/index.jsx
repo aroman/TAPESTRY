@@ -124,7 +124,8 @@ class SidebarItemList extends React.Component {
             className='sidebar-item-img'
             src={root.thumbnail_url}
           />
-          <span className='sidebar-item-title'>{root.title}</span>
+          <span className='sidebar-item-title'>{cluster.search_terms}</span>
+          <span className='sidebar-item-subtitle'>Mined{moment(cluster.mined_at).format('MMMM Do')}</span>
         </div>
       )
     })
