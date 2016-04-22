@@ -7,7 +7,7 @@ import (
 )
 
 type Video struct {
-	ID           bson.ObjectId `bson:"_id,omitempty" json:"id" `
+	ID           bson.ObjectId `bson:"_id,omitempty" json:"id"`
 	YoutubeID    string        `bson:"youtube_id" json:"youtube_id"`
 	Title        string        `bson:"title" json:"title"`
 	Description  string        `bson:"description" json:"description"`

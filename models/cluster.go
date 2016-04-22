@@ -14,5 +14,4 @@ type Cluster struct {
 	Longitude   float64       `bson:"longitude" json:"longitude"`
 	OccurredAt  time.Time     `bson:"occurred_at" json:"occurred_at"`
 	MinedAt     time.Time     `bson:"mined_at" json:"mined_at"`
-	RootVideoID bson.ObjectId `bson:"root_video_id" json:"root_video_id"`
 }

@@ -78,13 +78,8 @@ func main() {
 	}
 
 	log.Debugf("Performing root search: %v", *terms)
-	ids, err := agent.Search(params)
+	roots, err := agent.Search(params)
 
-	if err != nil {
-		panic(err)
-	}
-
-	roots, err := agent.GetVideosFromIds(ids)
 	if err != nil {
 		panic(err)
 	}
@@ -94,10 +89,10 @@ func main() {
 	}
 
 	// Map from YouTube IDs to number of occurances in results
-	m := make(map[string]int)
+	m := make(map[models.Video]int)
 
-	for _, root := range roots {
-		ids, err := agent.Search(vidagents.SearchParameters{
+	for _, root := range roots[:5] {
+		videos, err := agent.Search(vidagents.SearchParameters{
 			Terms: root.Title,
 		})
 
@@ -105,16 +100,18 @@ func main() {
 			panic(err)
 		}
 
-		fmt.Printf("Found %v videos\n", len(ids))
+		fmt.Printf("Found %v videos\n", len(videos))
 
-		for _, id := range ids {
-			m[id] += 1
+		for _, video := range videos {
+			m[video]++
 		}
 
 		// videos, err := agent.GetVideosFromIds(ids)
 	}
 
-	n := map[int][]string{}
+	var goodVideos []models.Video
+
+	n := map[int][]models.Video{}
 	var a []int
 	for k, v := range m {
 		n[v] = append(n[v], k)
@@ -124,29 +121,29 @@ func main() {
 	}
 	sort.Sort(sort.Reverse(sort.IntSlice(a)))
 	for _, k := range a {
-		for _, s := range n[k] {
-			// if k <= 5 {
-			// 	continue
-			// }
-			fmt.Printf("%d: %v\n", k, s)
+		for _, video := range n[k] {
+			if k >= 3 {
+				goodVideos = append(goodVideos, video)
+				fmt.Printf("%d: %v\n", k, video)
+			}
 		}
 	}
 
 	// fmt.Printf("%v\n", m)
-	os.Exit(0)
+	// os.Exit(0)
 
-	root := roots[0]
+	// root := roots[0]
 
-	ids, err = agent.Search(agent.GenParams(root))
-	if err != nil {
-		panic(err)
-	}
+	// ids, err = agent.Search(agent.GenParams(root))
+	// if err != nil {
+	// panic(err)
+	// }
 
-	videos, err := agent.GetVideosFromIds(ids)
+	// videos, err := agent.GetVideosFromIds(ids)
 
-	for _, video := range videos {
-		printVideo(video)
-	}
+	// for _, video := range videos {
+	// 	printVideo(video)
+	// }
 
 	if *dryRun {
 		log.Warn("Dry-run mode; not writing to database")
@@ -156,31 +153,21 @@ func main() {
 	cluster := models.Cluster{
 		SearchTerms: params.Terms,
 		MinedAt:     time.Now(),
-		Latitude:    root.Latitude,
-		Longitude:   root.Longitude,
 		// TODO: Don't assume the video's publishing date is the same as the occurance date
-		OccurredAt: root.PublishedAt,
 	}
 	cluster.ID = bson.NewObjectId()
 
-	// Check if there's already a cluster with a root video with our same youtube ID.
-	var existingRoot models.Video
+	// Check if there's already a cluster with our search terms
 	var existingCluster models.Cluster
 
-	DB.C("videos").Find(bson.M{"youtube_id": root.YoutubeID}).One(&existingRoot)
-	DB.C("clusters").Find(bson.M{"root_video_id": existingRoot.ID}).One(&existingCluster)
+	DB.C("clusters").Find(bson.M{"search_terms": params.Terms}).One(&existingCluster)
 
 	if existingCluster.ID != "" {
-		log.Fatalf("Cluster already mined (there's another cluster with the same root video)")
+		log.Fatalf("Cluster already mined (there's another cluster with the same search terms)")
 	}
 
-	for _, video := range videos {
-		// Associate the root video with the cluster
-		if video.YoutubeID == root.YoutubeID {
-			video.ID = bson.NewObjectId()
-			cluster.RootVideoID = video.ID
-		}
-
+	for _, video := range goodVideos {
+		video.ID = bson.NewObjectId()
 		video.ClusterID = cluster.ID
 
 		err = DB.C("videos").Insert(video)
@@ -194,5 +181,5 @@ func main() {
 		panic(err)
 	}
 
-	log.Debugf("Cluster of %v video(s) written to database", len(videos))
+	log.Debugf("Cluster of %v video(s) written to database", len(goodVideos))
 }

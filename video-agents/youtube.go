@@ -40,7 +40,7 @@ func CreateAgent(key string) (*Agent, error) {
 
 // searches YouTube based on the provided parameters
 // returns a list of youtube video IDs (results)
-func (agent Agent) Search(params SearchParameters) ([]string, error) {
+func (agent Agent) Search(params SearchParameters) ([]models.Video, error) {
 
 	var ids []string
 
@@ -86,7 +86,7 @@ func (agent Agent) Search(params SearchParameters) ([]string, error) {
 		}
 	}
 
-	return ids, nil
+	return agent.GetVideosFromIds(ids)
 }
 
 // takes a list of video IDs and returns Video objects containing metadata

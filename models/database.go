@@ -1,16 +1,20 @@
 package models
 
 import (
+	"os"
+
 	log "github.com/Sirupsen/logrus"
 	"gopkg.in/mgo.v2"
 )
 
-const (
-	mongoURI = "mongodb://bambi:bambi@ds019078.mlab.com:19078/tapestry-sandbox"
-)
-
 func GetDB() *mgo.Database {
-	log.Debug("Connecting to database")
+	mongoURI := os.Getenv("TAPESTRY_MONGO_URI")
+
+	if mongoURI == "" {
+		mongoURI = "mongodb://bambi:bambi@ds019078.mlab.com:19078/tapestry-sandbox"
+	}
+
+	log.Debugf("Connecting to database %v", mongoURI)
 	session, err := mgo.Dial(mongoURI)
 
 	if err != nil {
