@@ -47,6 +47,15 @@ func main() {
 
 	kingpin.Parse()
 
+	// Check if there's already a cluster with our search terms
+	var existingCluster models.Cluster
+
+	DB.C("clusters").Find(bson.M{"search_terms": params.Terms}).One(&existingCluster)
+
+	if existingCluster.ID != "" {
+		log.Fatalf("Cluster already mined (there's another cluster with the same search terms)")
+	}
+
 	DB := models.GetDB()
 
 	log.Debug("Creating YouTube Agent")
@@ -91,7 +100,7 @@ func main() {
 	// Map from YouTube IDs to number of occurances in results
 	m := make(map[models.Video]int)
 
-	for _, root := range roots[:5] {
+	for _, root := range roots {
 		videos, err := agent.Search(vidagents.SearchParameters{
 			Terms: root.Title,
 		})
@@ -105,10 +114,9 @@ func main() {
 		for _, video := range videos {
 			m[video]++
 		}
-
-		// videos, err := agent.GetVideosFromIds(ids)
 	}
 
+	// XXX: Refactor
 	var goodVideos []models.Video
 
 	n := map[int][]models.Video{}
@@ -124,26 +132,10 @@ func main() {
 		for _, video := range n[k] {
 			if k >= 3 {
 				goodVideos = append(goodVideos, video)
-				fmt.Printf("%d: %v\n", k, video)
+				// fmt.Printf("%d: %v\n", k, video)
 			}
 		}
 	}
-
-	// fmt.Printf("%v\n", m)
-	// os.Exit(0)
-
-	// root := roots[0]
-
-	// ids, err = agent.Search(agent.GenParams(root))
-	// if err != nil {
-	// panic(err)
-	// }
-
-	// videos, err := agent.GetVideosFromIds(ids)
-
-	// for _, video := range videos {
-	// 	printVideo(video)
-	// }
 
 	if *dryRun {
 		log.Warn("Dry-run mode; not writing to database")
@@ -153,18 +145,8 @@ func main() {
 	cluster := models.Cluster{
 		SearchTerms: params.Terms,
 		MinedAt:     time.Now(),
-		// TODO: Don't assume the video's publishing date is the same as the occurance date
 	}
 	cluster.ID = bson.NewObjectId()
-
-	// Check if there's already a cluster with our search terms
-	var existingCluster models.Cluster
-
-	DB.C("clusters").Find(bson.M{"search_terms": params.Terms}).One(&existingCluster)
-
-	if existingCluster.ID != "" {
-		log.Fatalf("Cluster already mined (there's another cluster with the same search terms)")
-	}
 
 	for _, video := range goodVideos {
 		video.ID = bson.NewObjectId()
