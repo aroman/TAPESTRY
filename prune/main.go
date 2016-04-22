@@ -1,4 +1,4 @@
-// Removes trashed videos and clusters. No-op without --for-sure
+// Removes videos and clusters with given label. No-op without --for-sure
 
 package main
 
@@ -10,6 +10,7 @@ import (
 )
 
 var (
+	label   = kingpin.Flag("label", "remove clusters with this label").Required().String()
 	forSure = kingpin.Flag("for-sure", "really delete stuff").Bool()
 )
 
@@ -19,19 +20,21 @@ func main() {
 	kingpin.Parse()
 
 	DB := models.GetDB()
-	log.Info("Looking for trashed videos and clusters...")
+	log.
+		WithField("label", *label).
+		Info("Looking for videos and clusters...")
 
 	var trashedClusters []models.Cluster
 	var trashedClusterIDs []bson.ObjectId
 
 	DB.C("clusters").
-		Find(bson.M{"label": "trash"}).
+		Find(bson.M{"label": *label}).
 		Select(bson.M{"cluster_id": true}).
 		All(&trashedClusters)
 
 	log.WithFields(log.Fields{
 		"count": len(trashedClusters),
-	}).Info("found trashed clusters")
+	}).Info("Query for clusters complete")
 
 	if !*forSure {
 		log.Fatalf("you didn't pass --for-sure, exiting safely...")
@@ -51,7 +54,7 @@ func main() {
 
 	log.WithFields(log.Fields{
 		"count": info.Removed,
-	}).Info("deleted trashed videos")
+	}).Info("deleted videos")
 
 	info, err = DB.C("clusters").
 		RemoveAll(bson.M{"_id": bson.M{"$in": trashedClusterIDs}})
@@ -62,6 +65,6 @@ func main() {
 
 	log.WithFields(log.Fields{
 		"count": info.Removed,
-	}).Info("deleted trashed clusters")
+	}).Info("deleted clusters")
 
 }
