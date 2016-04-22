@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-	"build": "./node_modules/webpack/bin/webpack.js"
+	"watch": "./node_modules/webpack/bin/webpack.js --watch --progress"
   },
   "author": "",
   "license": "UNLICENSED",
