@@ -11,7 +11,7 @@ func GetDB() *mgo.Database {
 	mongoURI := os.Getenv("TAPESTRY_MONGO_URI")
 
 	if mongoURI == "" {
-		mongoURI = "mongodb://bambi:bambi@ds019078.mlab.com:19078/tapestry-sandbox"
+		mongoURI = "mongodb://localhost:27017"
 	}
 
 	log.Debugf("Connecting to database %v", mongoURI)
