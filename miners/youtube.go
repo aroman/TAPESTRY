@@ -97,18 +97,18 @@ func main() {
 	m := make(map[string]int)
 
 	for _, root := range roots {
-		m[root.YoutubeID] = 1
-
-		relatedIDs, err := agent.SearchRelatedVideos(root.YoutubeID)
+		ids, err := agent.Search(vidagents.SearchParameters{
+			Terms: root.Title,
+		})
 
 		if err != nil {
 			panic(err)
 		}
 
-		fmt.Printf("Found %v related videos\n", len(ids))
+		fmt.Printf("Found %v videos\n", len(ids))
 
-		for _, relatedID := range relatedIDs {
-			m[relatedID] += 1
+		for _, id := range ids {
+			m[id] += 1
 		}
 
 		// videos, err := agent.GetVideosFromIds(ids)
@@ -125,11 +125,14 @@ func main() {
 	sort.Sort(sort.Reverse(sort.IntSlice(a)))
 	for _, k := range a {
 		for _, s := range n[k] {
-			fmt.Printf("%s, %d\n", s, k)
+			// if k <= 5 {
+			// 	continue
+			// }
+			fmt.Printf("%d: %v\n", k, s)
 		}
 	}
 
-	fmt.Printf("%v\n", m)
+	// fmt.Printf("%v\n", m)
 	os.Exit(0)
 
 	root := roots[0]
