@@ -57,7 +57,6 @@ class ClusterBrowser extends React.Component {
     const step = 4
     const videos = this.props.cluster.videos
     const index = this.state.index
-    console.log('hi')
     const selectedVideo = _.find(videos, v => v._id === this.state.selectedVideoId) || this.props.cluster.videos[0]
 
     const thumbnails = this.props.cluster.videos.map((video, i) => {
@@ -142,7 +141,7 @@ class Sidebar extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      filterMode: LABEL.Unmarked,
+      filterMode: LABEL.Star,
     }
   }
 
