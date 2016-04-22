@@ -47,16 +47,15 @@ func main() {
 
 	kingpin.Parse()
 
+	DB := models.GetDB()
 	// Check if there's already a cluster with our search terms
 	var existingCluster models.Cluster
 
-	DB.C("clusters").Find(bson.M{"search_terms": params.Terms}).One(&existingCluster)
+	DB.C("clusters").Find(bson.M{"search_terms": *terms}).One(&existingCluster)
 
 	if existingCluster.ID != "" {
 		log.Fatalf("Cluster already mined (there's another cluster with the same search terms)")
 	}
-
-	DB := models.GetDB()
 
 	log.Debug("Creating YouTube Agent")
 	agent, err := vidagents.CreateAgent("AIzaSyB-BZx063pUet0zDunRitL_kjwma68tU1c")
