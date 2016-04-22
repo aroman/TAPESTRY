@@ -26,7 +26,9 @@ func index(w http.ResponseWriter, r *http.Request) {
 }
 
 func getClusters(w http.ResponseWriter, r *http.Request) {
-	var clusters []Cluster
+	// var clusters []Cluster
+
+	result := []bson.M{}
 
 	pipe := db.C("clusters").
 		Pipe([]bson.M{{
@@ -38,13 +40,13 @@ func getClusters(w http.ResponseWriter, r *http.Request) {
 			},
 		}})
 
-	err := pipe.All(&clusters)
+	err := pipe.All(&result)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	json, err := json.Marshal(clusters)
+	json, err := json.Marshal(result)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

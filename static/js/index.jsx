@@ -11,7 +11,7 @@ import YouTube from 'react-youtube'
 import './style.less'
 
 const setItem = (obj, x, xs) =>
- xs.map(_x => _x.id == x.id ? Object.assign(x, obj) : _x)
+ xs.map(_x => _x._id == x._id ? Object.assign(x, obj) : _x)
 
 const LABEL = {
   Unmarked: '',
@@ -57,18 +57,19 @@ class ClusterBrowser extends React.Component {
     const step = 4
     const videos = this.props.cluster.videos
     const index = this.state.index
-    const selectedVideo = _.find(videos, v => v.id === this.state.selectedVideoId) || this.props.cluster.videos[0]
+    console.log('hi')
+    const selectedVideo = _.find(videos, v => v._id === this.state.selectedVideoId) || this.props.cluster.videos[0]
 
     const thumbnails = this.props.cluster.videos.map((video, i) => {
       // swap video if its selected
-      if (video.id == selectedVideo.id) {
+      if (video._id == selectedVideo._id) {
         video = videos[index]
       }
       return <img
-        key={video.id}
+        key={video._id}
         className='video-thumbnail'
         src={video.thumbnail_url}
-        onClick={e => this.setState({selectedVideoId: video.id})}
+        onClick={e => this.setState({selectedVideoId: video._id})}
       />
     })
 
@@ -117,8 +118,8 @@ class SidebarItemList extends React.Component {
       const root = cluster.videos[0]
 
       return (
-        <div key={cluster.id} onClick={() => this.props.onChange(cluster)} className={classNames('sidebar-item', {
-            selected: cluster.id == this.props.selectedCluster.id
+        <div key={cluster._id} onClick={() => this.props.onChange(cluster)} className={classNames('sidebar-item', {
+            selected: cluster._id == this.props.selectedCluster._id
           })}>
           <img
             className='sidebar-item-img'
@@ -205,7 +206,7 @@ class Main extends React.Component {
     this.setState({
       clusters: setItem({label: label}, cluster, this.state.clusters),
     })
-    fetch(`/api/cluster?id=${cluster.id}&label=${label}`)
+    fetch(`/api/cluster?id=${cluster._id}&label=${label}`)
     .catch(err => {
       alert('whoops, something broke. check the console.')
       console.error(err)
@@ -225,7 +226,7 @@ class Main extends React.Component {
     .then(response => response.json())
     .then(clusters => {
       this.setState({
-        selectedClusterId: clusters[0].id,
+        selectedClusterId: clusters[0]._id,
         clusters,
       })
     })
@@ -242,7 +243,7 @@ class Main extends React.Component {
         </div>
       )
     }
-    const selectedCluster = _.find(this.state.clusters, c => c.id == this.state.selectedClusterId) || this.state.clusters[0]
+    const selectedCluster = _.find(this.state.clusters, c => c._id == this.state.selectedClusterId) || this.state.clusters[0]
     return (
       <div className='main'>
         <ClusterBrowser
@@ -252,7 +253,7 @@ class Main extends React.Component {
         <Sidebar
           clusters={this.state.clusters}
           selectedCluster={selectedCluster}
-          onChange={cluster => this.setState({ selectedClusterId: cluster.id })}
+          onChange={cluster => this.setState({ selectedClusterId: cluster._id })}
         />
       </div>
     )
