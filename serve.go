@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"os/exec"
 	"time"
 
 	"github.com/CMU-Perceptual-Computing-Lab/Wisper/models"
@@ -18,6 +20,30 @@ var (
 
 func index(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "templates/index.html")
+}
+
+// XXX: This is not a great way to mine for clusters, it was added last-minute
+// as a minor convenience over running the command-line miner.
+func mine(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		http.ServeFile(w, r, "templates/mine.html")
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotAcceptable)
+	}
+
+	terms := r.PostFormValue("terms")
+	fmt.Println(terms)
+
+	cmd := exec.Command("./mine-youtube", "--terms", terms)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stdout
+	go cmd.Run()
+
+	w.Write([]byte("Job running. It may take a few minutes to show up in the interface."))
 }
 
 func getClusters(w http.ResponseWriter, r *http.Request) {
@@ -77,6 +103,7 @@ func main() {
 	db = models.GetDB()
 
 	http.HandleFunc("/", index)
+	http.HandleFunc("/mine", mine)
 	http.HandleFunc("/api/clusters", getClusters)
 	http.HandleFunc("/api/cluster", setCluster)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
