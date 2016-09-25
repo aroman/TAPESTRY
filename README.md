@@ -1,4 +1,4 @@
-# tapestry
+# TAPESTRY
 
 A set of tools to find public, user-uploaded videos taken of particular events, such as concerts, sporting events, and other occurrences with high spatial and temporal locality.
 
